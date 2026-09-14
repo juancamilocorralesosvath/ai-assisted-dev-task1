@@ -1,0 +1,344 @@
+[
+  {
+    "location": "PRD Product Scope vs FR-1, FR-3, FR-13 through FR-17, FR-21 through FR-38 and UX Core User Experience",
+    "trigger_condition": "Phase 1 is treated as the implementation scope while requirements and UX flows depend on WiFi/BLE detection, campus gates, LMS integration, dashboards, questionnaires, certificate storage, dynamic RBAC, and rotating QR tokens assigned to later phases or absent from the Phase 1 scope.",
+    "guard_snippet": "Tag every requirement and UX flow with its delivery phase; Phase 1 acceptance excludes later-phase capabilities or explicitly promotes them into Phase 1.",
+    "potential_consequence": "Teams implement incompatible scopes, critical dependencies remain unavailable, and Phase 1 cannot satisfy its stated acceptance journeys."
+  },
+  {
+    "location": "PRD FR-3 and UJ-4",
+    "trigger_condition": "Contact duration or distance is exactly 15 minutes or exactly 2 meters.",
+    "guard_snippet": "Define inclusive boundaries explicitly, including sampling tolerance: duration >= 15 minutes and measured distance <= 2 meters, or state the intended alternatives.",
+    "potential_consequence": "Equivalent contacts receive different outcomes across clients or services, producing missed exposures and inconsistent tests."
+  },
+  {
+    "location": "PRD FR-3 and UJ-1",
+    "trigger_condition": "Two users share a closed space but distance is unknown, intermittently exceeds the threshold, or proximity samples contain gaps.",
+    "guard_snippet": "Specify the closed-space qualification, allowable sampling gaps, aggregation window, and precedence between distance and room-based evidence.",
+    "potential_consequence": "The system creates either excessive false-positive contacts or dangerous false negatives."
+  },
+  {
+    "location": "PRD UJ-4 and UX Effortless Interactions / Sporadic Proximity Alert",
+    "trigger_condition": "The UX says contacts register without user intervention while the journey and FR-3 require users to confirm registration.",
+    "guard_snippet": "Choose one consent model and define behavior for confirm, deny, dismiss, timeout, and conflicting responses from the two participants.",
+    "potential_consequence": "Contacts may be recorded without consent or may silently disappear despite users expecting automatic protection."
+  },
+  {
+    "location": "PRD UJ-4 and FR-3",
+    "trigger_condition": "Only one of the two proximity participants confirms the sporadic circle.",
+    "guard_snippet": "Define whether one-sided confirmation creates an edge, creates a pending edge, or creates no edge, and specify its expiration.",
+    "potential_consequence": "Graph records become asymmetric or indefinite pending records create misleading exposure paths."
+  },
+  {
+    "location": "PRD FR-1 and UJ-3",
+    "trigger_condition": "A user is near multiple rooms, has overlapping scheduled classes, or the detected room differs from the schedule.",
+    "guard_snippet": "Require an explicit room choice and show time, course, and location; never auto-select when multiple candidates satisfy the trigger.",
+    "potential_consequence": "The user joins the wrong circle and unrelated attendees are later fenced."
+  },
+  {
+    "location": "PRD FR-1, UX Smart Proximity Check-in, and Accessibility Strategy",
+    "trigger_condition": "A proximity prompt is dismissed, times out, arrives while the device is locked, or cannot be perceived because push, haptic, or background permissions are disabled.",
+    "guard_snippet": "Provide an accessible in-app pending check-in queue and manual fallback with explicit expired and permission-disabled states.",
+    "potential_consequence": "Legitimate contacts are omitted and users cannot recover from a missed ambient prompt."
+  },
+  {
+    "location": "PRD FR-2 and UX Professor Circle Dashboard",
+    "trigger_condition": "Multiple staff members add the same participant concurrently or a participant self-joins while being manually added.",
+    "guard_snippet": "Make circle membership insertion idempotent on circleId plus anonymousId and return the existing membership on duplicate requests.",
+    "potential_consequence": "Capacity counts inflate, duplicate graph edges form, and later cascades or notifications run more than once."
+  },
+  {
+    "location": "UX Professor Circle Dashboard vs PRD DR-2, FR-18, and FR-19",
+    "trigger_condition": "The participant list displays user names even though graph operations and ordinary interfaces are supposed to use anonymous identities.",
+    "guard_snippet": "Show anonymous aliases or hash avatars by default; real names require an explicitly authorized, audited Health Center de-identification action.",
+    "potential_consequence": "Faculty or administrators gain access to personally identifiable contact and health-context information."
+  },
+  {
+    "location": "PRD FR-2 and UX Professor Circle Dashboard",
+    "trigger_condition": "A join or manual addition occurs when the displayed capacity is full, stale, zero, or changed concurrently.",
+    "guard_snippet": "Enforce capacity atomically on the server and provide full, waitlisted, stale-capacity, and override-required UI states.",
+    "potential_consequence": "Room capacity limits are exceeded or valid attendees are inconsistently rejected."
+  },
+  {
+    "location": "PRD FR-4, DR-3, NFR-7, and FR-8",
+    "trigger_condition": "A contact edge reaches exactly 14 days old while an associated fence remains active for a full 14-day window.",
+    "guard_snippet": "Define one authoritative timestamp, timezone, boundary inclusivity, and whether active-case evidence delays edge deletion.",
+    "potential_consequence": "An edge may disappear before fence reevaluation, or personal contact data may remain beyond the promised retention period."
+  },
+  {
+    "location": "PRD FR-4 and NFR-7",
+    "trigger_condition": "TTL cleanup is delayed by up to one hour while queries execute at the 14-day boundary.",
+    "guard_snippet": "Exclude logically expired edges from every query immediately at expiresAt, regardless of physical deletion timing.",
+    "potential_consequence": "Expired contacts can still trigger fences, analytics, or disclosures during the cleanup lag."
+  },
+  {
+    "location": "PRD FR-6 and UJ-1",
+    "trigger_condition": "A user submits the symptom report twice, retries after a timeout, or submits from web and mobile concurrently.",
+    "guard_snippet": "Require an idempotency key and collapse equivalent active symptom reports into one status-transition event.",
+    "potential_consequence": "Duplicate cascades and notifications increase anxiety, cost, and graph workload."
+  },
+  {
+    "location": "PRD FR-6 through FR-10",
+    "trigger_condition": "The graph contains cycles, self-edges, duplicate edges, or repeated paths to the same person.",
+    "guard_snippet": "Traverse with a visited-node set, reject self-edges, deduplicate targets, and cap traversal to the defined temporal exposure graph.",
+    "potential_consequence": "Recursive promotion can loop, exceed the one-second target, or send repeated alerts."
+  },
+  {
+    "location": "PRD FR-7 and UJ-2",
+    "trigger_condition": "A probable contact is promoted through several confirmed or suspect paths at the same time.",
+    "guard_snippet": "Define idempotent status transitions and retain a set of active causal paths rather than a single source.",
+    "potential_consequence": "Race conditions overwrite exposure causes and later release a person while another valid path remains."
+  },
+  {
+    "location": "PRD FR-6 through FR-10",
+    "trigger_condition": "A negative-test dissolution and a positive-test promotion for related users arrive concurrently or out of order.",
+    "guard_snippet": "Version status events per subject, reject stale transitions, and reevaluate against the latest committed graph snapshot.",
+    "potential_consequence": "A user may be incorrectly released, remain fenced, or oscillate between states."
+  },
+  {
+    "location": "PRD FR-8 and FR-9",
+    "trigger_condition": "A negative test was collected before the relevant exposure, is too old, belongs to someone else, or has already been used.",
+    "guard_snippet": "Validate certificate ownership, specimen time relative to exposure, test type, issuer, validity window, and one-time use before dissolving a fence.",
+    "potential_consequence": "Invalid evidence can release an exposed person and permit campus entry."
+  },
+  {
+    "location": "PRD UJ-6 and FR-10",
+    "trigger_condition": "A downstream person has no remaining Suspect path but does have an active Confirmed path, another independent exposure, or a manually imposed medical fence.",
+    "guard_snippet": "Release only when no active fence cause of any supported type remains, and list every retained cause in the decision record.",
+    "potential_consequence": "The system clears a fence despite another valid health restriction."
+  },
+  {
+    "location": "PRD FR-8",
+    "trigger_condition": "A fence reaches its 14-day expiration while a later exposure occurred during the same fence.",
+    "guard_snippet": "Track fence causes with independent start and expiry times; overall release occurs only after the last active cause expires.",
+    "potential_consequence": "A later exposure is hidden by the earlier fence and the user is released prematurely."
+  },
+  {
+    "location": "PRD FR-11 and SC-1",
+    "trigger_condition": "The success criterion allows 60 seconds for the cascade while alerts must be dispatched within 30 seconds and the cascade itself must complete within one second.",
+    "guard_snippet": "Define separate clocks and endpoints for status commit, cascade completion, notification enqueue, provider acceptance, and user delivery.",
+    "potential_consequence": "Performance can be reported as successful under one metric and failed under another."
+  },
+  {
+    "location": "PRD FR-11 and DR-6",
+    "trigger_condition": "One or more of push, email, or SMS is unavailable, unconfigured, bounced, delayed, duplicated, or opted out.",
+    "guard_snippet": "Track each channel independently, retry idempotently, provide an in-app alert inbox, and define the minimum accessible delivery success condition.",
+    "potential_consequence": "Users miss urgent instructions or receive repeated sensitive alerts."
+  },
+  {
+    "location": "PRD FR-11 and FR-12 with Architecture Push Notifications",
+    "trigger_condition": "Fence reason or recommended action appears in lock-screen push, email subject, or SMS preview visible to third parties.",
+    "guard_snippet": "Use privacy-preserving notification text outside the authenticated app and reveal health details only after reauthentication.",
+    "potential_consequence": "Sensitive medical or exposure information is disclosed to bystanders, shared-device users, or telecom providers."
+  },
+  {
+    "location": "PRD FR-13",
+    "trigger_condition": "The LMS is unavailable, rejects the update, receives events out of order, or later receives a fence-release event.",
+    "guard_snippet": "Define retry, reconciliation, idempotency, stale-event rejection, and explicit removal of Remote Attendance status.",
+    "potential_consequence": "Students lose attendance credit or remain marked remote after their fence ends."
+  },
+  {
+    "location": "PRD FR-14",
+    "trigger_condition": "A class circle has zero registered members, incomplete adoption, late joins, exempt instructors, or all known members are fenced only momentarily.",
+    "guard_snippet": "Define the authoritative roster, minimum population, evaluation time, grace period, exemptions, and reversal behavior before canceling a reservation.",
+    "potential_consequence": "Classes are canceled accidentally or remain scheduled despite all actual attendees being unavailable."
+  },
+  {
+    "location": "PRD FR-15 through FR-17 and UX Frictionless Campus Entry",
+    "trigger_condition": "The app or gate scanner is offline even though the UX requires QR tokens to work without cellular data.",
+    "guard_snippet": "Define offline signature validation, trusted key rotation, cached revocation limits, maximum offline age, and fail-open versus fail-closed policy.",
+    "potential_consequence": "Valid users are blocked during outages or revoked and fenced credentials continue granting entry."
+  },
+  {
+    "location": "PRD FR-30 through FR-32 and UX Rotating QR Token",
+    "trigger_condition": "A QR token is copied, photographed, replayed at another gate, or scanned repeatedly within its five-minute validity.",
+    "guard_snippet": "Bind tokens to nonce, audience, gate or session context where feasible, and enforce replay detection with a defined offline fallback.",
+    "potential_consequence": "One valid credential can be shared to admit unauthorized or fenced people."
+  },
+  {
+    "location": "PRD FR-32 and UX Rotating QR Token",
+    "trigger_condition": "The user device and gate scanner clocks differ near token issuance or expiry.",
+    "guard_snippet": "Specify authoritative time, allowed clock skew, warning threshold, regeneration behavior, and a recoverable clock-error state.",
+    "potential_consequence": "Fresh tokens are rejected or expired tokens remain valid longer than intended."
+  },
+  {
+    "location": "PRD FR-15, FR-16, and UX Campus Entry",
+    "trigger_condition": "Entry validation times out, returns an unknown status, receives malformed data, or cannot verify a signature.",
+    "guard_snippet": "Add explicit Pending, Offline, Invalid, Expired, and System Error outcomes; do not map unknown states to Green.",
+    "potential_consequence": "Gate staff either admit unsafe users or deny entry without actionable recovery guidance."
+  },
+  {
+    "location": "PRD FR-16 and UX Visual Design Foundation",
+    "trigger_condition": "A user cannot distinguish Green and Red because of color-vision deficiency, low brightness, screen damage, or assistive technology.",
+    "guard_snippet": "Pair color with icon, text, audible or haptic feedback, and accessible labels for every entry result.",
+    "potential_consequence": "Users and gate staff misinterpret entry authorization."
+  },
+  {
+    "location": "PRD FR-17 and UX External User Registration",
+    "trigger_condition": "A visitor abandons registration after account creation but before verification, biometric linking, or app handoff.",
+    "guard_snippet": "Model resumable pending states with expiration and cleanup, and allow a non-biometric accessible recovery path.",
+    "potential_consequence": "Orphan accounts and biometric references accumulate while visitors cannot complete or restart onboarding."
+  },
+  {
+    "location": "PRD FR-17 and UX Biometric Web-to-App Handoff",
+    "trigger_condition": "A visitor has no biometric hardware, denies biometric permission, shares a device, or changes devices.",
+    "guard_snippet": "Make biometrics optional local authentication and provide a secure PIN or verified-link alternative without transmitting biometric templates.",
+    "potential_consequence": "Visitors are excluded or the backend unnecessarily stores highly sensitive biometric data."
+  },
+  {
+    "location": "Architecture Authentication Flow",
+    "trigger_condition": "LDAP rejects credentials for a campus identity and the authentication chain automatically falls back to a local account with the same identifier.",
+    "guard_snippet": "Separate LDAP and guest namespaces and fall back only when the account is explicitly classified as local, never after an LDAP credential failure.",
+    "potential_consequence": "A local-account collision can bypass institutional authentication."
+  },
+  {
+    "location": "PRD FR-33 through FR-36 and Architecture Dynamic RBAC",
+    "trigger_condition": "An administrator edits their own role, grants role-management permission, creates a circular role definition, or removes the last authorized administrator.",
+    "guard_snippet": "Enforce privilege ceilings, separation of duties, cycle validation, protected system permissions, and a last-administrator invariant.",
+    "potential_consequence": "Users can escalate privileges or permanently lock administrators out."
+  },
+  {
+    "location": "PRD FR-35 and Architecture JWT Authorization",
+    "trigger_condition": "Permissions or employment status change while an already-issued JWT still contains old claims.",
+    "guard_snippet": "Define short token lifetime, revocation or permission-version checks for sensitive operations, and immediate invalidation on role removal.",
+    "potential_consequence": "Revoked users retain access to de-identification, certificates, gate scanning, or role administration."
+  },
+  {
+    "location": "PRD FR-19, FR-20, and Architecture Identity Vault",
+    "trigger_condition": "A Health Center user requests de-identification outside an active care case, requests many identities, or repeatedly probes anonymous IDs.",
+    "guard_snippet": "Require case-bound purpose, step-up authentication, least-privilege authorization, rate limits, immutable audit records, and alerts for bulk access.",
+    "potential_consequence": "Authorized access is abused to reconstruct the contact graph's real identities."
+  },
+  {
+    "location": "PRD DR-2, FR-18, and Architecture Graph Privacy",
+    "trigger_condition": "Salted hashes use predictable source identifiers, per-user salts are exposed, salts rotate, or the same person receives different hashes across services.",
+    "guard_snippet": "Specify a keyed pseudonymization scheme, key ownership and rotation, stable scope, collision handling, and migration without placing source identifiers in the graph.",
+    "potential_consequence": "Identifiers become guessable, unlinkable across required operations, or duplicated during key rotation."
+  },
+  {
+    "location": "PRD DR-4 vs Architecture Kafka Event Store and Audit",
+    "trigger_condition": "A user requests complete deletion while identity mappings, graph events, notification logs, certificates, backups, or immutable audit records still reference them.",
+    "guard_snippet": "Define deletion coverage, pseudonymization of legally retained audit data, backup expiry, completion deadline, and evidence returned to the requester.",
+    "potential_consequence": "The promised right to deletion cannot be honored consistently and retained records can re-identify the user."
+  },
+  {
+    "location": "PRD DR-4 and FR-6 through FR-10",
+    "trigger_condition": "A user requests deletion while actively fenced or while their contact edges are causal evidence for other active fences.",
+    "guard_snippet": "Define the lawful and safety-preserving deletion policy for active cases, including immediate identity unlinking and bounded retention of non-identifying exposure evidence.",
+    "potential_consequence": "Deletion either breaks active safety decisions or unlawfully retains identifiable health data."
+  },
+  {
+    "location": "PRD FR-21 through FR-23",
+    "trigger_condition": "Dashboard filters produce very small groups, sparse buildings, rare departments, or combinations that isolate one person.",
+    "guard_snippet": "Apply minimum cohort thresholds, complementary suppression, query-rate controls, and privacy review to every filter combination.",
+    "potential_consequence": "Aggregated metrics reveal an individual's symptom or fence status."
+  },
+  {
+    "location": "PRD FR-22 and DR-2",
+    "trigger_condition": "Building and department are joined with identity-vault or schedule data to produce hotspot visualizations.",
+    "guard_snippet": "Use a separately aggregated read model with coarse spatial and organizational buckets; prohibit dashboard joins to identity mappings.",
+    "potential_consequence": "Location and affiliation data can re-identify anonymous users."
+  },
+  {
+    "location": "PRD FR-24 through FR-26",
+    "trigger_condition": "Questionnaire configuration changes while a user is answering, a response is submitted against an obsolete schema, or validation rules conflict.",
+    "guard_snippet": "Version and atomically publish questionnaire schemas; bind each response to the displayed version and reject invalid configurations before activation.",
+    "potential_consequence": "Responses become uninterpretable or users cannot complete mandatory entry screening."
+  },
+  {
+    "location": "PRD FR-24 through FR-26",
+    "trigger_condition": "A runtime questionnaire includes questions that collect direct identity or unnecessary sensitive health information.",
+    "guard_snippet": "Restrict configurable field types and data purposes, require privacy approval for sensitive changes, and prevent direct identifiers in anonymous responses.",
+    "potential_consequence": "Administrators can accidentally bypass the anonymity model through configuration."
+  },
+  {
+    "location": "PRD FR-27 through FR-29",
+    "trigger_condition": "A certificate upload is oversized, mislabeled, malformed, encrypted, contains active content, or carries sensitive metadata.",
+    "guard_snippet": "Enforce size and type limits using content inspection, malware scanning, metadata stripping, quarantine, and safe rendering without executing embedded content.",
+    "potential_consequence": "Uploads can exhaust storage, compromise staff devices, or leak identity and location metadata."
+  },
+  {
+    "location": "PRD FR-28 and Architecture File Storage",
+    "trigger_condition": "The Kubernetes PersistentVolume is full, unavailable, restored from backup, or shared across replicas with inconsistent permissions.",
+    "guard_snippet": "Define encrypted storage, quotas, atomic upload failure, replica-safe access, retention and deletion jobs, backup handling, and an unavailable-storage UI state.",
+    "potential_consequence": "Certificates are lost, partially stored, exposed across tenants, or retained after deletion."
+  },
+  {
+    "location": "PRD FR-29",
+    "trigger_condition": "A staff member views a certificate for a user or case outside their assigned scope.",
+    "guard_snippet": "Authorize certificate access per case and purpose, require step-up authentication, prevent bulk export, and audit every view and validation.",
+    "potential_consequence": "Sensitive medical documents are exposed through broad role membership."
+  },
+  {
+    "location": "PRD FR-37 and FR-38 vs UX Responsive Strategy",
+    "trigger_condition": "The web interface is described both as full functional parity and as excluding proximity-based features.",
+    "guard_snippet": "Define a platform capability matrix and specify manual equivalents and degraded states for each unavailable mobile capability.",
+    "potential_consequence": "Non-smartphone users encounter missing workflows despite the stated parity requirement."
+  },
+  {
+    "location": "UX Feedback Patterns and Accessibility Strategy",
+    "trigger_condition": "Glow, pulse, mesh motion, or haptic feedback affects users with reduced-motion preferences, vestibular sensitivity, or unsupported haptic hardware.",
+    "guard_snippet": "Honor reduced-motion settings, provide static equivalents, avoid essential haptic-only feedback, and expose state text to assistive technology.",
+    "potential_consequence": "Core status feedback becomes inaccessible or physically uncomfortable."
+  },
+  {
+    "location": "Architecture Kafka Events and Promotion Engine",
+    "trigger_condition": "Kafka delivers duplicate, delayed, reordered, or poison status events, or a consumer restarts after processing but before committing.",
+    "guard_snippet": "Use event IDs, per-entity versions, idempotent consumers, transactional outbox or inbox handling, retry limits, and a monitored dead-letter path.",
+    "potential_consequence": "Statuses, notifications, LMS flags, and audit records diverge across services."
+  },
+  {
+    "location": "Architecture Caffeine L1 plus Redis L2 Caching and Entry Validation",
+    "trigger_condition": "A status changes to Fenced but a gateway replica retains an Active result in local cache.",
+    "guard_snippet": "Define cache invalidation on status commit, maximum stale duration below the safety threshold, and authoritative bypass for entry validation.",
+    "potential_consequence": "A newly fenced person can receive a Green entry result."
+  },
+  {
+    "location": "Architecture Data Boundaries and Cross-Domain Communication",
+    "trigger_condition": "The graph update succeeds but notification, LMS, dashboard, or audit processing fails, or the reverse occurs.",
+    "guard_snippet": "Define the source of truth, transactional event publication, compensating actions, reconciliation jobs, and user-visible partial-completion states.",
+    "potential_consequence": "Users see inconsistent status across the app, gates, LMS, and Health Center tools."
+  },
+  {
+    "location": "PRD NFR-1, NFR-2, NFR-3 and SC-1",
+    "trigger_condition": "A cascade touches more than 10,000 active nodes, peak concurrency coincides with a large cascade, or traffic is outside the undefined normal-load profile.",
+    "guard_snippet": "Specify overload behavior, hard traversal limits, queueing and backpressure, benchmark datasets, and degraded-service safety rules.",
+    "potential_consequence": "Cascades time out, APIs breach latency targets, and exposure notifications arrive too late."
+  },
+  {
+    "location": "PRD NFR-4",
+    "trigger_condition": "A health event, gate scan, or fence release occurs outside 7AM–10PM local time or across campuses with different timezones.",
+    "guard_snippet": "Define which functions remain continuously available, authoritative campus timezone, and outage behavior outside the measured uptime window.",
+    "potential_consequence": "Critical health and access workflows lack an availability commitment when users still need them."
+  },
+  {
+    "location": "UX Green Screen Entry vs PRD NFR-3 and Architecture Authentication Flow",
+    "trigger_condition": "The promised end-to-end gate result under 200ms requires LDAP, database, cache, signature, network, scanner, and gate-actuator operations.",
+    "guard_snippet": "Define whether 200ms is client-visible end-to-end or server processing time and specify a measurable offline or cached validation path.",
+    "potential_consequence": "The headline UX benchmark is untestable or unattainable in real gate conditions."
+  },
+  {
+    "location": "PRD FR-30 through FR-32",
+    "trigger_condition": "A user is promoted to Fenced after a five-minute QR token has already been issued.",
+    "guard_snippet": "Define immediate token revocation or online status revalidation at scan time; offline acceptance must have an explicit bounded risk window.",
+    "potential_consequence": "Previously issued tokens continue granting entry after a health-status change."
+  },
+  {
+    "location": "PRD FR-31",
+    "trigger_condition": "An exit scan is missed, duplicated, processed as entry, or performed at a different gate while offline.",
+    "guard_snippet": "Use distinct signed entry and exit actions, make scans idempotent, reconcile unordered events, and expose an Unknown Presence state.",
+    "potential_consequence": "Campus occupancy records become inaccurate and may contaminate contact inference or emergency decisions."
+  },
+  {
+    "location": "PRD FR-36 and Architecture Audit",
+    "trigger_condition": "A role or permission change affects authorization but the audit event fails or contains sensitive identity and health attributes.",
+    "guard_snippet": "Fail closed for privileged mutations unless a minimal tamper-evident audit record commits, and prohibit health payloads from RBAC audit events.",
+    "potential_consequence": "Privilege changes become untraceable or the audit system becomes a secondary privacy leak."
+  },
+  {
+    "location": "PRD FR-12 and UX Fence Notification",
+    "trigger_condition": "The system cannot safely reveal the exact exposure reason because doing so would identify the reporting person or a very small circle.",
+    "guard_snippet": "Define privacy-preserving reason categories and suppress person, class, room, or time details when they could enable re-identification.",
+    "potential_consequence": "A supposedly anonymous fence alert reveals who reported symptoms or tested positive."
+  }
+]

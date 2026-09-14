@@ -1,0 +1,296 @@
+[
+  {
+    "location": "prd.md:105,137-145,195",
+    "trigger_condition": "Encounter lasts exactly 15 minutes or measures exactly 2 meters",
+    "guard_snippet": "if (duration >= 15m && distance <= 2m) createEdge();",
+    "potential_consequence": "Equivalent encounters produce inconsistent contact edges and fences"
+  },
+  {
+    "location": "prd.md:105,195",
+    "trigger_condition": "Closed-space contact lacks duration or distance readings",
+    "guard_snippet": "if (sharedClosedSpace) applyConfiguredClosedSpaceThreshold();",
+    "potential_consequence": "Brief or distant co-occupants may be fenced indiscriminately"
+  },
+  {
+    "location": "prd.md:127-133,191,195",
+    "trigger_condition": "Proximity data is unavailable, stale, contradictory, or spoofed",
+    "guard_snippet": "if (!signalValidAndFresh) requireManualVerification();",
+    "potential_consequence": "False or missed circles corrupt downstream fencing"
+  },
+  {
+    "location": "prd.md:105,177,197,301",
+    "trigger_condition": "Contact edge is created or queried at the 14-day cutoff",
+    "guard_snippet": "include = edgeTime >= now.minusDays(14);",
+    "potential_consequence": "Boundary contacts are inconsistently retained or fenced"
+  },
+  {
+    "location": "prd.md:177,301",
+    "trigger_condition": "Graph purge fails or runs more than one hour late",
+    "guard_snippet": "if (purgeFailed || purgeLag > 1h) retryAndAlert();",
+    "potential_consequence": "Expired contact data remains available beyond policy"
+  },
+  {
+    "location": "prd.md:101-109,203",
+    "trigger_condition": "Self-report arrives for Probable, Suspect, Confirmed, or deleted user",
+    "guard_snippet": "switch (currentStatus) { case Active: promote(); default: reconcile(); }",
+    "potential_consequence": "Invalid transitions duplicate or weaken existing fences"
+  },
+  {
+    "location": "prd.md:115-121,205",
+    "trigger_condition": "Positive result arrives for a user not currently Suspect",
+    "guard_snippet": "if (positiveVerified) reconcileFromAnyCurrentStatus();",
+    "potential_consequence": "Confirmed cases may not initiate required propagation"
+  },
+  {
+    "location": "prd.md:103-121,203-205",
+    "trigger_condition": "Duplicate or concurrent status events target the same user",
+    "guard_snippet": "processStatusEventOnce(eventId, expectedVersion);",
+    "potential_consequence": "Repeated cascades send duplicate alerts and corrupt statuses"
+  },
+  {
+    "location": "prd.md:119-121,205",
+    "trigger_condition": "Recursive propagation encounters a graph cycle",
+    "guard_snippet": "if (visited.has(nodeId)) return; visited.add(nodeId);",
+    "potential_consequence": "Cascade may loop indefinitely or exceed performance limits"
+  },
+  {
+    "location": "prd.md:105-121,203-205",
+    "trigger_condition": "Graph membership changes while a promotion cascade runs",
+    "guard_snippet": "cascade(snapshotVersion); if (graphChanged) reconcile();",
+    "potential_consequence": "Concurrent contacts may be skipped or inconsistently fenced"
+  },
+  {
+    "location": "prd.md:163-167,211",
+    "trigger_condition": "New suspect path appears during downstream fence release",
+    "guard_snippet": "releaseOnlyIf(noActivePathsAtCommit(contactId));",
+    "potential_consequence": "Exposed contacts may be released despite active risk"
+  },
+  {
+    "location": "prd.md:207-211",
+    "trigger_condition": "Medical override dissolves a fence with downstream contacts",
+    "guard_snippet": "if (medicalOverride) reevaluateDownstreamContacts();",
+    "potential_consequence": "Dependent fences remain stale after an override"
+  },
+  {
+    "location": "prd.md:159-167,207-211",
+    "trigger_condition": "Verified negative test predates a later exposure",
+    "guard_snippet": "if (testTime < latestExposureTime) keepFenceActive();",
+    "potential_consequence": "A later exposure is incorrectly cleared"
+  },
+  {
+    "location": "prd.md:117,123,253,259",
+    "trigger_condition": "Referenced anonymous ID is missing, expired, or malformed",
+    "guard_snippet": "if (!validAnonymousId(id)) rejectAndRequestResolution();",
+    "potential_consequence": "Medical data may be lost or linked incorrectly"
+  },
+  {
+    "location": "prd.md:127-133,191",
+    "trigger_condition": "Student ignores or abandons a scheduled-class prompt",
+    "guard_snippet": "if (promptTimedOut) recordNoCheckInAndAllowRetry();",
+    "potential_consequence": "Attendance state remains ambiguous and circles incomplete"
+  },
+  {
+    "location": "prd.md:133",
+    "trigger_condition": "Manual room selection is invalid, full, or no longer scheduled",
+    "guard_snippet": "if (!roomEligible(selection)) rejectAndRefreshChoices();",
+    "potential_consequence": "Student joins the wrong or nonexistent circle"
+  },
+  {
+    "location": "prd.md:131,191-193",
+    "trigger_condition": "Student confirms the same class check-in multiple times",
+    "guard_snippet": "upsertMembership(circleId, anonymousId);",
+    "potential_consequence": "Duplicate participants distort capacity and contact graphs"
+  },
+  {
+    "location": "prd.md:143-145",
+    "trigger_condition": "Only one proximity participant confirms sporadic registration",
+    "guard_snippet": "createEdgeOnlyIf(allRequiredParticipantsConfirmed());",
+    "potential_consequence": "Unilateral confirmation may create unauthorized contact data"
+  },
+  {
+    "location": "prd.md:143-145",
+    "trigger_condition": "One or both sporadic-registration prompts expire unanswered",
+    "guard_snippet": "if (confirmationExpired) discardPendingEdge();",
+    "potential_consequence": "Pending circles may remain indefinitely or become accidental contacts"
+  },
+  {
+    "location": "prd.md:153,203-211,227",
+    "trigger_condition": "Entry check encounters Probable, Suspect, Confirmed, or unknown status",
+    "guard_snippet": "switch (status) { case Active: Green; case Probable: case Suspect: case Confirmed: Red; default: denySafely; }",
+    "potential_consequence": "Nonbinary statuses may receive incorrect gate decisions"
+  },
+  {
+    "location": "prd.md:151-155,225-229",
+    "trigger_condition": "QR or NFC scan is unreadable, interrupted, duplicated, or offline",
+    "guard_snippet": "if (!scanValid || offline) denyAndOfferFallback();",
+    "potential_consequence": "Gate access becomes unsafe or unavailable"
+  },
+  {
+    "location": "prd.md:155,229",
+    "trigger_condition": "Visitor abandons registration or account creation fails",
+    "guard_snippet": "if (!registrationComplete) denyEntryAndPreserveRetryState();",
+    "potential_consequence": "Visitor entry remains undefined or bypasses onboarding"
+  },
+  {
+    "location": "prd.md:229",
+    "trigger_condition": "Biometric already belongs to another anonymous account",
+    "guard_snippet": "if (biometricLinkedElsewhere) blockAndEscalateIdentityConflict();",
+    "potential_consequence": "One person may control multiple conflicting identities"
+  },
+  {
+    "location": "prd.md:179",
+    "trigger_condition": "Deletion is requested during an active fence or investigation",
+    "guard_snippet": "if (activeLegalOrSafetyHold) deferDeletionAndNotifyUser();",
+    "potential_consequence": "Deletion may break containment or violate retention obligations"
+  },
+  {
+    "location": "prd.md:175-179,233-259",
+    "trigger_condition": "Deletion succeeds in only some linked data stores",
+    "guard_snippet": "deleteAtomicallyAcross(graph, vault, responses, certificates);",
+    "potential_consequence": "Residual records defeat complete deletion guarantees"
+  },
+  {
+    "location": "prd.md:63,175,233,297",
+    "trigger_condition": "Hash collision or salt rotation changes an anonymous identifier",
+    "guard_snippet": "if (collisionDetected || saltRotated) migrateMappingsAtomically();",
+    "potential_consequence": "Contacts may merge, split, or lose identity linkage"
+  },
+  {
+    "location": "prd.md:109,185,215",
+    "trigger_condition": "User lacks an address or consent for one notification channel",
+    "guard_snippet": "sendThroughAvailableConsentedChannels(minimumChannels: 2);",
+    "potential_consequence": "Required simultaneous delivery fails for otherwise reachable users"
+  },
+  {
+    "location": "prd.md:109,215-217",
+    "trigger_condition": "Notification provider fails, times out, or returns ambiguous success",
+    "guard_snippet": "retryIdempotently(); if (!deliveredByDeadline) escalate();",
+    "potential_consequence": "Fenced users receive late, missing, or duplicate alerts"
+  },
+  {
+    "location": "prd.md:219",
+    "trigger_condition": "LMS is unavailable or rejects Remote Attendance updates",
+    "guard_snippet": "queueIdempotentLmsUpdate(); retryUntilAcknowledged();",
+    "potential_consequence": "Fenced students remain marked for in-person attendance"
+  },
+  {
+    "location": "prd.md:163-167,219",
+    "trigger_condition": "Fence dissolves after LMS Remote Attendance was applied",
+    "guard_snippet": "if (fenceReleased) clearRemoteAttendanceStatus();",
+    "potential_consequence": "Released students remain incorrectly remote"
+  },
+  {
+    "location": "prd.md:221",
+    "trigger_condition": "Class circle has zero members",
+    "guard_snippet": "if (memberCount > 0 && fencedCount === memberCount) cancelReservation();",
+    "potential_consequence": "Empty classes may be cancelled vacuously"
+  },
+  {
+    "location": "prd.md:221",
+    "trigger_condition": "Fully fenced circle has no reservation or is already cancelled",
+    "guard_snippet": "if (reservation?.status === Active) cancelIdempotently();",
+    "potential_consequence": "Cancellation errors may interrupt the fencing workflow"
+  },
+  {
+    "location": "prd.md:163-167,221",
+    "trigger_condition": "A cancelled class later has members released from fences",
+    "guard_snippet": "if (classEligibleAfterRelease) notifySchedulerForRestoration();",
+    "potential_consequence": "Class remains cancelled after its triggering condition disappears"
+  },
+  {
+    "location": "prd.md:237",
+    "trigger_condition": "De-identification succeeds but audit-log persistence fails",
+    "guard_snippet": "commitDeidentificationAndAuditAtomically();",
+    "potential_consequence": "Sensitive identity access occurs without an audit record"
+  },
+  {
+    "location": "prd.md:241-245",
+    "trigger_condition": "Dashboard aggregate contains a very small cohort",
+    "guard_snippet": "if (cohortSize < privacyThreshold) suppressOrBucketMetric();",
+    "potential_consequence": "Aggregates may reveal individual health status"
+  },
+  {
+    "location": "prd.md:249-253",
+    "trigger_condition": "Questionnaire configuration is missing, empty, or invalid",
+    "guard_snippet": "if (!validQuestionnaireConfig) blockSubmissionAndUseApprovedFallback();",
+    "potential_consequence": "Entry decisions proceed without valid health screening"
+  },
+  {
+    "location": "prd.md:249-253",
+    "trigger_condition": "Questionnaire configuration changes during an active response",
+    "guard_snippet": "bindResponseToImmutableQuestionnaireVersion();",
+    "potential_consequence": "Answers are validated against mismatched questions"
+  },
+  {
+    "location": "prd.md:249-253",
+    "trigger_condition": "User submits incomplete, invalid, or abandoned questionnaire answers",
+    "guard_snippet": "if (!responsesValidAndComplete) rejectAndPreserveProgress();",
+    "potential_consequence": "Invalid screening data may permit entry"
+  },
+  {
+    "location": "prd.md:257",
+    "trigger_condition": "Certificate is oversized, corrupted, encrypted, mislabeled, or malicious",
+    "guard_snippet": "if (!safeSupportedCertificate(file)) rejectAndQuarantine();",
+    "potential_consequence": "Uploads may exhaust storage or expose staff devices"
+  },
+  {
+    "location": "prd.md:259",
+    "trigger_condition": "PersistentVolume is full, unavailable, or loses the upload",
+    "guard_snippet": "storeAtomically(); if (!durablyStored) failAndRetry();",
+    "potential_consequence": "Database links point to missing medical evidence"
+  },
+  {
+    "location": "prd.md:261",
+    "trigger_condition": "Certificate validation is rejected, inconclusive, or later revoked",
+    "guard_snippet": "switch (verdict) { case Valid: applyResult(); default: preserveFenceAndEscalate(); }",
+    "potential_consequence": "Untrusted certificates may incorrectly alter fence status"
+  },
+  {
+    "location": "prd.md:265-269",
+    "trigger_condition": "Scanner and issuer clocks differ near QR expiration",
+    "guard_snippet": "validateWithBoundedClockSkew(token, serverTime);",
+    "potential_consequence": "Valid users are denied or expired tokens accepted"
+  },
+  {
+    "location": "prd.md:265-269",
+    "trigger_condition": "Signed QR token is copied and replayed before expiration",
+    "guard_snippet": "if (nonceAlreadyUsed(token.nonce)) rejectReplay();",
+    "potential_consequence": "Multiple people may enter using one valid token"
+  },
+  {
+    "location": "prd.md:265-269",
+    "trigger_condition": "QR signature is invalid or signed by a retired key",
+    "guard_snippet": "if (!verifyTrustedCurrentKey(token)) rejectAndLog();",
+    "potential_consequence": "Forged access may be granted or valid access denied"
+  },
+  {
+    "location": "prd.md:273-279",
+    "trigger_condition": "Role is modified or deleted while still assigned",
+    "guard_snippet": "updateRoleAssignmentsAndSessionsAtomically(roleChange);",
+    "potential_consequence": "Users retain stale access or lose required permissions"
+  },
+  {
+    "location": "prd.md:277",
+    "trigger_condition": "JWT permissions are revoked while an issued token remains valid",
+    "guard_snippet": "if (tokenVersion !== currentPermissionVersion) rejectToken();",
+    "potential_consequence": "Revoked users continue accessing protected operations"
+  },
+  {
+    "location": "prd.md:279",
+    "trigger_condition": "Administrator removes the final role-management permission",
+    "guard_snippet": "if (wouldRemoveLastRoleAdmin) rejectChange();",
+    "potential_consequence": "Administration becomes permanently locked out"
+  },
+  {
+    "location": "prd.md:277-279",
+    "trigger_condition": "Hidden UI action is called directly without backend permission",
+    "guard_snippet": "authorizeEveryProtectedEndpoint(jwtClaims, requiredPermission);",
+    "potential_consequence": "Unauthorized users bypass conditional UI rendering"
+  },
+  {
+    "location": "prd.md:289-293",
+    "trigger_condition": "Graph or concurrent-user load exceeds specified capacity",
+    "guard_snippet": "if (capacityExceeded) shedLoadAndPreserveSafetyCriticalOperations();",
+    "potential_consequence": "Overload may delay cascades or silently drop health events"
+  }
+]

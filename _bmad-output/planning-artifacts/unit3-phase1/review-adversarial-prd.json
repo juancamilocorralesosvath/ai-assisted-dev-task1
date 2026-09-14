@@ -1,0 +1,134 @@
+[
+  {
+    "location": "Product Scope and Functional Requirements",
+    "trigger_condition": "When Phase 1 is treated as the MVP, FR-1, FR-3, FR-13, FR-14, FR-15 through FR-17, and FR-21 through FR-38 require capabilities assigned to Phase 2 or Phase 3.",
+    "guard_snippet": "Tag every functional requirement with its delivery phase and define a Phase 1 acceptance baseline containing only the status engine, temporal graph, manual circles, self-reporting, notifications, and de-identification console.",
+    "potential_consequence": "Teams cannot determine what must ship in the MVP, so estimates, acceptance decisions, and dependencies will diverge."
+  },
+  {
+    "location": "User Journeys UJ-1 and UJ-3; Product Scope Phase 1",
+    "trigger_condition": "When a symptom is reported during Phase 1, UJ-1 expects duration, distance, and closed-space filtering even though Phase 1 supplies only manually created circles and no defined exposure measurements.",
+    "guard_snippet": "Define the Phase 1 exposure-edge schema and rule explicitly, such as: a manually confirmed shared event records start time, end time, venue type, and participant confirmation; only edges satisfying the configured exposure rule enter a fence cascade.",
+    "potential_consequence": "The MVP cannot deterministically identify whom to fence, making its central journey unimplementable or arbitrarily broad."
+  },
+  {
+    "location": "Status Promotion & Fencing, FR-6 through FR-10",
+    "trigger_condition": "When a person is simultaneously reachable through multiple exposure paths or receives repeated reports and test results, the document provides no canonical state model for Active, Fenced, Probable, Suspect, Confirmed, released, expired, or recovered.",
+    "guard_snippet": "Add a state-transition table defining allowed transitions, precedence, entry and exit conditions, effective timestamps, idempotency rules, and whether epidemiological status and access-fence status are separate fields.",
+    "potential_consequence": "Different services can assign conflicting statuses, incorrectly grant campus access, or repeatedly trigger cascades and notifications."
+  },
+  {
+    "location": "UJ-2 and FR-7",
+    "trigger_condition": "When a confirmed case has contacts whose contacts form cycles or large connected components, recursive promotion has no depth, time, evidence, or duplicate-processing boundary.",
+    "guard_snippet": "Specify recursion limits and traversal semantics: process only qualifying edges within the infectious window, visit each node once per case event, cap propagation at an approved depth, and record the originating case and rule version.",
+    "potential_consequence": "A single positive result could fence most of campus, loop through cycles, or produce inconsistent results across repeated executions."
+  },
+  {
+    "location": "UJ-6; FR-8 through FR-10",
+    "trigger_condition": "When a Suspect receives any negative result, the fence is dissolved without requirements for test type, specimen time, verification source, minimum time since exposure, or conflicting positive and symptom evidence.",
+    "guard_snippet": "Define an evidence policy that lists accepted tests, authorized issuers, timing windows, conflict precedence, retest rules, and the exact conditions under which a negative result may release each status.",
+    "potential_consequence": "An early, fraudulent, or unsuitable negative test can release infectious users and all downstream contacts."
+  },
+  {
+    "location": "Success Criteria SC-1; FR-11; NFR-1",
+    "trigger_condition": "When containment performance is evaluated, the document alternately requires a cascade to trigger within 60 seconds, notifications within 30 seconds, and cascade completion within 1 second without defining common start and end events.",
+    "guard_snippet": "Define one timestamped service-level chain: accepted report to completed graph decision, completed decision to notification-provider acceptance, and end-to-end accepted report to dispatch, with percentile targets and failure exclusions.",
+    "potential_consequence": "The system can satisfy one interpretation while failing the actual containment objective, and acceptance tests will be disputed."
+  },
+  {
+    "location": "Privacy Compliance DR-2; Privacy & Identity FR-18 and NFR-5",
+    "trigger_condition": "When anonymous IDs are derived from predictable university identifiers, ordinary salted hashing is described as non-reversible but remains vulnerable to offline enumeration and does not define salt secrecy, rotation, or collision handling.",
+    "guard_snippet": "Require keyed pseudonymization using an approved HMAC or tokenization service with protected keys, environment separation, rotation and migration procedures, collision detection, and a prohibition on exposing source identifiers or hashing material.",
+    "potential_consequence": "An attacker with graph access can recover identities by guessing identifiers, defeating the stated privacy boundary."
+  },
+  {
+    "location": "Privacy Compliance DR-3 and DR-4; FR-4; NFR-7",
+    "trigger_condition": "When a user requests deletion or graph data reaches 14 days, the document does not define deletion across identity mappings, backups, certificates, questionnaire responses, audit records, analytics, caches, or derived fence state.",
+    "guard_snippet": "Add a data-retention matrix for every store and derivative, plus a deletion workflow defining propagation deadlines, legal-retention exceptions, backup expiry, audit evidence, and downstream fence recalculation.",
+    "potential_consequence": "The product may claim deletion while retaining sensitive data or may delete evidence needed to maintain correct fences and audits."
+  },
+  {
+    "location": "Notifications & Academic Integration, FR-11 and FR-12",
+    "trigger_condition": "When a status changes, medical-context alerts are sent simultaneously by push, email, and SMS without consent, channel verification, message-minimization, delivery retry, or shared-device safeguards.",
+    "guard_snippet": "Require verified contact channels and user consent, use privacy-neutral message bodies with authenticated detail links, define fallback and retry behavior, and record per-channel delivery outcomes.",
+    "potential_consequence": "Sensitive health information may be exposed to family members, employers, recycled phone numbers, or compromised inboxes while failed deliveries go unnoticed."
+  },
+  {
+    "location": "Campus Entry & Visitor Management, FR-17",
+    "trigger_condition": "When a visitor registers, the system links biometrics to a local database account without defining biometric modality, necessity, consent, matching behavior, retention, deletion, or an alternative for refusal.",
+    "guard_snippet": "Remove biometric collection from the MVP unless justified; otherwise specify modality, explicit consent, purpose limitation, encrypted template storage, false-match thresholds, retention and deletion periods, access controls, and a non-biometric onboarding path.",
+    "potential_consequence": "The privacy-first product accumulates high-risk immutable identifiers with no bounded use or defensible handling policy."
+  },
+  {
+    "location": "Certificate Management, FR-27 through FR-29",
+    "trigger_condition": "When a certificate is uploaded, the only storage requirement is a Kubernetes PersistentVolume, with no malware screening, encryption, size and type validation, retention, tenant isolation, or access logging.",
+    "guard_snippet": "Require allowlisted formats and size limits, content-based validation, malware scanning before availability, encrypted object storage, short-lived authorized access, immutable audit logs, retention expiry, and verified deletion.",
+    "potential_consequence": "Uploads can become a malware path or an indefinitely retained repository of exposed medical documents."
+  },
+  {
+    "location": "Access Levels & Dynamic RBAC, FR-33 through FR-36",
+    "trigger_condition": "When permissions are enforced, FR-35 specifies conditional UI rendering from JWT claims but no server-side authorization, token revocation, privilege-change propagation, or protection against administrators granting themselves sensitive rights.",
+    "guard_snippet": "State that every API and data query enforces server-side permission checks; define short token lifetimes and revocation, separation of duties for sensitive role changes, approval rules, least-privilege defaults, and immutable role-change auditing.",
+    "potential_consequence": "Hidden UI controls may be bypassed directly, and stale or self-issued privileges can expose identities and health records."
+  },
+  {
+    "location": "Reporting & Analytics, FR-21 through FR-23",
+    "trigger_condition": "When dashboards segment hotspots by building and department, 'aggregated anonymous metrics' has no minimum cohort size, suppression rule, time bucket, or defense against differencing queries.",
+    "guard_snippet": "Define disclosure controls including minimum cohort thresholds, small-cell suppression, bounded time and geography granularity, query-rate limits, and prevention of differencing across filters.",
+    "potential_consequence": "Administrators can infer the health status of individuals in small classes, departments, buildings, or time windows."
+  },
+  {
+    "location": "Contact Detection & Circle Management, FR-2 and FR-5",
+    "trigger_condition": "When professors or administrators view active participant lists or manually add people to circles, the document does not state whether identities are visible or how this complies with anonymous graph operations.",
+    "guard_snippet": "Specify that circle dashboards expose pseudonymous attendance records only unless a separately authorized workflow is invoked, and define who may add, remove, or inspect participants with audit and participant-notification requirements.",
+    "potential_consequence": "Staff may gain an unintended roster-to-health-status linkage or alter exposure records without accountability."
+  },
+  {
+    "location": "UJ-3, UJ-4, FR-1, and FR-3",
+    "trigger_condition": "When WiFi or BLE data is used to assert less-than-two-meter proximity or room presence, no accuracy, calibration, confidence, device-compatibility, or conflicting-signal acceptance criteria are provided.",
+    "guard_snippet": "Define supported devices and environments, measurable precision and recall targets, calibration procedures, confidence thresholds, conflict resolution, and a rule that sensor inference requires user confirmation before creating an exposure edge.",
+    "potential_consequence": "Unreliable radio estimates will generate systematic false contacts, missed exposures, and inconsistent behavior across buildings and devices."
+  },
+  {
+    "location": "Campus Entry & Visitor Management, UJ-5 and FR-15 through FR-16",
+    "trigger_condition": "When the app, scanner, network, identity vault, or status service is unavailable or returns stale or indeterminate data, entry validation has only Green and Red outcomes and no operational fallback.",
+    "guard_snippet": "Add an Unknown state and define offline validation limits, status freshness, retry behavior, manual Health Center override, emergency-access policy, scanner audit records, and fail-open versus fail-closed rules by gate type.",
+    "potential_consequence": "Outages can either admit fenced people or block healthy people from campus with no controlled resolution path."
+  },
+  {
+    "location": "QR-Based Entry & Exit, FR-30 through FR-32",
+    "trigger_condition": "When a signed QR token is copied or photographed during its five-minute lifetime, no one-time use, nonce tracking, audience binding, or scanner authentication prevents replay.",
+    "guard_snippet": "Require a unique nonce, gate and purpose audience, authenticated scanner, server-side replay detection, single-use consumption where online, and a documented offline replay-risk window.",
+    "potential_consequence": "A valid green token can be shared or replayed to admit a different person or fabricate exit records."
+  },
+  {
+    "location": "Dynamic Health Questionnaires, FR-24 through FR-26",
+    "trigger_condition": "When an administrator edits questionnaire rules at runtime, no versioning, approval, publication schedule, rollback, localization, scoring semantics, or effect on already submitted responses is defined.",
+    "guard_snippet": "Require immutable questionnaire versions with author, approver, effective interval, locale, validation and scoring rules, rollback support, and preservation of the exact version used for each response.",
+    "potential_consequence": "Users can receive inconsistent access decisions, historical answers may be reinterpreted, and health-policy changes cannot be audited."
+  },
+  {
+    "location": "Success Criteria SC-3 and SC-4",
+    "trigger_condition": "When adoption and false-positive success are measured, neither the eligible-contact denominator nor a reliable ground-truth method is defined, and the false-positive metric depends on voluntary post-fence self-reporting.",
+    "guard_snippet": "Define eligible events and users, deduplication and missing-data rules, cohort and time window, response-rate thresholds, and an independently validated sampling method for estimating true contact and false-positive rates.",
+    "potential_consequence": "Success can be claimed or rejected using incompatible denominators and biased survey responses."
+  },
+  {
+    "location": "Non-Functional Requirements, NFR-1 and NFR-2",
+    "trigger_condition": "When peak capacity is tested, the product claims 50,000 concurrent users but defines cascade performance only for a graph of 10,000 active nodes and provides no edge density or simultaneous-event workload.",
+    "guard_snippet": "Define a representative load model covering active nodes, edges per node, concurrent reports, overlapping cascades, notification fan-out, query mix, data age distribution, and percentile latency and error targets at the 50,000-user peak.",
+    "potential_consequence": "The system may pass the stated load test yet fail during a campus-wide outbreak or peak entry period."
+  },
+  {
+    "location": "General",
+    "trigger_condition": "When users are enrolled and continuously tracked, the document provides no consent, opt-out, revocation, notice, alternative-access, or policy for users unable or unwilling to carry a compatible device.",
+    "guard_snippet": "Add an enrollment and consent model defining mandatory versus optional processing, revocation effects, transparent notices, non-retaliatory alternatives, guardian handling where applicable, and equivalent manual workflows for users without supported devices.",
+    "potential_consequence": "The service can exclude users, collect data without a clear basis, and undermine adoption of the contact-tracing program."
+  },
+  {
+    "location": "General; Privacy Compliance and Access Levels",
+    "trigger_condition": "When privileged users de-identify records, validate certificates, modify roles, override fences, or edit questionnaires, only de-identification is explicitly audit-logged and no audit integrity or review policy is defined.",
+    "guard_snippet": "Require tamper-evident audit events for every privileged read and mutation, including actor, subject, purpose, before and after values, timestamp, request identifier, retention period, access restrictions, and periodic review alerts.",
+    "potential_consequence": "Sensitive access and policy manipulation may be undetectable, preventing incident investigation and accountability."
+  }
+]
