@@ -1,0 +1,611 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Offline Gate — CircleGuard Party Mode</title>
+<style>
+:root{
+  --bg:#f7f6f3; --panel:#fffefb; --ink:#1c1b19; --muted:#6b6862; --line:#e2ded5;
+  --accent:#0f766e; --amber:#b45309; --red:#9f1239; --green:#15803d;
+  --shadow:0 1px 2px rgba(0,0,0,.05),0 8px 24px -12px rgba(0,0,0,.12);
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  --john:#7c3aed; --sally:#db2777; --winston:#0369a1; --murat:#047857;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#131211; --panel:#1b1a18; --ink:#eceae5; --muted:#9a958c; --line:#2f2d29;
+    --accent:#2dd4bf; --amber:#fbbf24; --red:#fb7185; --green:#4ade80;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 28px -12px rgba(0,0,0,.6);
+    --john:#a78bfa; --sally:#f472b6; --winston:#38bdf8; --murat:#34d399;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131211; --panel:#1b1a18; --ink:#eceae5; --muted:#9a958c; --line:#2f2d29;
+  --accent:#2dd4bf; --amber:#fbbf24; --red:#fb7185; --green:#4ade80;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 28px -12px rgba(0,0,0,.6);
+  --john:#a78bfa; --sally:#f472b6; --winston:#38bdf8; --murat:#34d399;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.65 ui-serif,Georgia,"Iowan Old Style",Palatino,serif;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:860px;margin:0 auto;padding:0 20px;padding-block:0 80px}
+h1,h2,h3{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  line-height:1.2;letter-spacing:-.02em}
+a{color:var(--accent)}
+code,.mono{font-family:var(--mono);font-size:.86em}
+
+/* ── hero ─────────────────────────────── */
+header.hero{padding-block:72px 40px;border-bottom:1px solid var(--line);margin-bottom:8px}
+.kicker{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--muted);margin:0 0 18px}
+h1{font-size:clamp(38px,8vw,66px);margin:0 0 6px;font-weight:700}
+h1 .sub{display:block;font-size:clamp(15px,2.6vw,20px);font-weight:400;color:var(--muted);
+  letter-spacing:0;margin-top:14px;font-family:ui-serif,Georgia,serif;font-style:italic}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:28px}
+.chip{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11.5px;letter-spacing:.04em;
+  border:1px solid var(--line);border-radius:100px;padding:5px 12px;color:var(--muted);
+  background:var(--panel)}
+
+/* ── gate svg ─────────────────────────── */
+.gatewrap{margin:36px 0 0;text-align:center}
+.gatewrap svg{max-width:100%;height:auto}
+@keyframes pulse{0%,100%{opacity:.25}50%{opacity:1}}
+.blip{animation:pulse 2.6s ease-in-out infinite}
+.blip2{animation:pulse 2.6s ease-in-out infinite;animation-delay:.9s}
+.blip3{animation:pulse 2.6s ease-in-out infinite;animation-delay:1.8s}
+@media (prefers-reduced-motion:reduce){.blip,.blip2,.blip3{animation:none;opacity:.8}}
+
+/* ── sections ─────────────────────────── */
+section{margin-block:60px}
+h2{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);
+  font-weight:600;margin:0 0 6px}
+h2+.lede{font-size:clamp(23px,4vw,30px);line-height:1.3;margin:0 0 28px;font-weight:400;
+  font-family:ui-sans-serif,system-ui,sans-serif;letter-spacing:-.02em}
+
+/* ── exhibits ─────────────────────────── */
+.exhibits{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:620px){.exhibits{grid-template-columns:1fr}}
+.ex{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;
+  box-shadow:var(--shadow)}
+.ex .src{font-family:var(--mono);font-size:10.5px;color:var(--muted);letter-spacing:.03em;
+  display:block;margin-bottom:12px;text-transform:uppercase}
+.ex blockquote{margin:0 0 14px;font-size:14.5px;line-height:1.55;padding-left:12px;
+  border-left:2px solid var(--line)}
+.ex blockquote:last-child{margin-bottom:0}
+.ex .ln{font-family:var(--mono);font-size:10.5px;color:var(--accent);display:block;margin-top:5px}
+.vs{text-align:center;font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;
+  letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin:16px 0}
+
+/* ── cast ─────────────────────────────── */
+.cast{display:grid;gap:12px}
+.p{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--c);
+  border-radius:0 12px 12px 0;padding:18px 20px;box-shadow:var(--shadow)}
+.p .who{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;margin-bottom:10px}
+.p .ic{font-size:19px}
+.p .nm{font-family:ui-sans-serif,system-ui,sans-serif;font-weight:650;font-size:16px;color:var(--c)}
+.p .ti{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11.5px;color:var(--muted);
+  letter-spacing:.03em}
+.p p{margin:0 0 10px;font-size:15px}
+.p p:last-child{margin-bottom:0}
+.nono{font-family:ui-sans-serif,system-ui,sans-serif;font-size:12.5px;color:var(--muted);
+  border-top:1px dashed var(--line);padding-top:10px;margin-top:12px!important}
+.nono b{color:var(--c);letter-spacing:.06em;font-size:10.5px;text-transform:uppercase;
+  display:block;margin-bottom:3px}
+#john{--c:var(--john)} #sally{--c:var(--sally)}
+#winston{--c:var(--winston)} #murat{--c:var(--murat)}
+
+/* ── turns ────────────────────────────── */
+.turn{display:grid;grid-template-columns:34px 1fr;gap:12px;margin-bottom:22px}
+.turn .av{font-size:17px;line-height:1.5;text-align:center;
+  border-radius:50%;height:32px;width:32px;display:grid;place-items:center;
+  background:var(--panel);border:1px solid var(--line)}
+.turn .body{min-width:0}
+.turn .nm{font-family:ui-sans-serif,system-ui,sans-serif;font-weight:650;font-size:13.5px;
+  margin-bottom:3px}
+.turn p{margin:0 0 9px;font-size:15.5px}
+.turn p:last-child{margin-bottom:0}
+.turn.j .nm{color:var(--john)} .turn.s .nm{color:var(--sally)}
+.turn.w .nm{color:var(--winston)} .turn.m .nm{color:var(--murat)}
+.stage{font-style:italic;color:var(--muted);font-size:14px;margin:26px 0;text-align:center}
+.stage::before,.stage::after{content:"·";margin:0 10px;opacity:.5}
+
+/* ── swaps ────────────────────────────── */
+.swaps{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  padding:24px 20px;box-shadow:var(--shadow);overflow-x:auto}
+.swaps svg{min-width:520px;width:100%;height:auto;display:block}
+
+/* ── ledger ───────────────────────────── */
+.tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--panel);
+  box-shadow:var(--shadow)}
+table{border-collapse:collapse;width:100%;min-width:560px;
+  font-family:ui-sans-serif,system-ui,sans-serif;font-size:13.5px}
+th,td{text-align:left;padding:12px 16px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+  font-weight:600;background:color-mix(in srgb,var(--line) 30%,transparent)}
+tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600;white-space:nowrap}
+td b,.num{font-family:var(--mono);font-size:12.5px;color:var(--accent);font-weight:600}
+
+/* ── tiers ────────────────────────────── */
+.tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}
+@media(max-width:620px){.tiers{grid-template-columns:1fr}}
+.tier{border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--panel);
+  box-shadow:var(--shadow)}
+.tier .rng{font-family:var(--mono);font-size:12px;color:var(--muted);display:block;margin-bottom:9px}
+.tier .st{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px}
+.tier .st span{font-family:ui-sans-serif,system-ui,sans-serif;font-size:10.5px;font-weight:600;
+  padding:3px 8px;border-radius:5px;letter-spacing:.04em}
+.ok{background:color-mix(in srgb,var(--green) 15%,transparent);color:var(--green)}
+.no{background:color-mix(in srgb,var(--red) 13%,transparent);color:var(--red);
+  text-decoration:line-through;text-decoration-thickness:1.5px}
+.am{background:color-mix(in srgb,var(--amber) 16%,transparent);color:var(--amber)}
+.tier p{margin:0;font-size:13px;color:var(--muted);line-height:1.5}
+
+/* ── findings ─────────────────────────── */
+.find{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;
+  margin-bottom:12px;box-shadow:var(--shadow)}
+.find h3{margin:0 0 9px;font-size:15.5px;font-weight:650}
+.find h3 .anchor{font-family:var(--mono);font-size:11.5px;color:var(--accent);font-weight:500;
+  display:block;margin-bottom:4px;letter-spacing:.02em}
+.find p{margin:0 0 9px;font-size:14.5px}
+.find p:last-child{margin:0}
+.find .q{font-style:italic;color:var(--muted);border-left:2px solid var(--line);
+  padding-left:13px;font-size:14px}
+
+/* ── pull ─────────────────────────────── */
+.pull{font-size:clamp(20px,3.6vw,27px);line-height:1.38;margin:44px 0;text-align:center;
+  font-family:ui-sans-serif,system-ui,sans-serif;font-weight:400;letter-spacing:-.02em}
+.pull cite{display:block;font-size:12px;font-style:normal;color:var(--muted);margin-top:16px;
+  letter-spacing:.1em;text-transform:uppercase}
+
+footer{border-top:1px solid var(--line);padding-top:26px;margin-top:70px;
+  font-family:ui-sans-serif,system-ui,sans-serif;font-size:12px;color:var(--muted);
+  display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <p class="kicker">CircleGuard · Cross-Document Collision · Option A</p>
+  <h1>The Offline Gate
+    <span class="sub">Four agents, six rounds, six reversals — and the highest-scored risk of all arriving in the round that was supposed to be cleanup.</span>
+  </h1>
+  <div class="meta">
+    <span class="chip">14 September 2026</span>
+    <span class="chip">BMad Party Mode · subagent</span>
+    <span class="chip">John · Sally · Winston · Murat</span>
+    <span class="chip">Lead Engineer: Julian</span>
+  </div>
+
+  <div class="gatewrap" aria-hidden="true">
+  <svg viewBox="0 0 660 132" role="img">
+    <defs>
+      <linearGradient id="fade" x1="0" x2="1">
+        <stop offset="0" stop-color="currentColor" stop-opacity="0"/>
+        <stop offset=".5" stop-color="currentColor" stop-opacity=".22"/>
+        <stop offset="1" stop-color="currentColor" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <line x1="0" y1="106" x2="660" y2="106" stroke="url(#fade)" stroke-width="1.5"/>
+    <!-- walking figures -->
+    <g fill="currentColor" opacity=".3">
+      <circle cx="44" cy="70" r="6"/><rect x="41" y="79" width="6" height="21" rx="3"/>
+      <circle cx="86" cy="70" r="6"/><rect x="83" y="79" width="6" height="21" rx="3"/>
+      <circle cx="128" cy="70" r="6"/><rect x="125" y="79" width="6" height="21" rx="3"/>
+      <circle cx="170" cy="70" r="6"/><rect x="167" y="79" width="6" height="21" rx="3"/>
+    </g>
+    <!-- turnstile -->
+    <g stroke="currentColor" fill="none" stroke-width="2" opacity=".55">
+      <rect x="292" y="40" width="76" height="66" rx="5"/>
+      <line x1="330" y1="40" x2="330" y2="16"/>
+    </g>
+    <!-- three verdict lamps -->
+    <circle class="blip"  cx="312" cy="62" r="7" fill="#15803d"/>
+    <circle class="blip2" cx="330" cy="62" r="7" fill="#b45309"/>
+    <circle class="blip3" cx="348" cy="62" r="7" fill="#9f1239"/>
+    <text x="330" y="90" text-anchor="middle" font-family="ui-monospace,monospace"
+          font-size="9" fill="currentColor" opacity=".5">S &#8804; 120s</text>
+    <!-- signal arcs, broken -->
+    <g stroke="currentColor" fill="none" stroke-width="1.6" opacity=".3">
+      <path d="M470 84 a22 22 0 0 1 30 0" stroke-dasharray="3 4"/>
+      <path d="M460 72 a36 36 0 0 1 50 0" stroke-dasharray="3 4"/>
+      <path d="M450 60 a50 50 0 0 1 70 0" stroke-dasharray="3 4"/>
+    </g>
+    <g stroke="#9f1239" stroke-width="2.2" opacity=".65">
+      <line x1="472" y1="46" x2="498" y2="72"/><line x1="498" y1="46" x2="472" y2="72"/>
+    </g>
+    <text x="485" y="100" text-anchor="middle" font-family="ui-monospace,monospace"
+          font-size="9" fill="currentColor" opacity=".5">no network</text>
+    <!-- clock -->
+    <g opacity=".45">
+      <circle cx="600" cy="62" r="24" stroke="currentColor" fill="none" stroke-width="1.8"/>
+      <line x1="600" y1="62" x2="600" y2="46" stroke="currentColor" stroke-width="2"/>
+      <line x1="600" y1="62" x2="612" y2="68" stroke="currentColor" stroke-width="2"/>
+    </g>
+    <text x="600" y="100" text-anchor="middle" font-family="ui-monospace,monospace"
+          font-size="9" fill="currentColor" opacity=".5">08:55</text>
+  </svg>
+  </div>
+</header>
+
+<section>
+  <h2>The Collision</h2>
+  <p class="lede">One product promised offline entry in three places. The architecture that had to host it said offline was not required — twice.</p>
+
+  <div class="exhibits">
+    <div class="ex">
+      <span class="src">Exhibit 1 — ux-design-specification.md</span>
+      <blockquote>“<b>Offline Resiliency:</b> QR tokens are generated and valid even without active cellular data.”<span class="ln">ux:174</span></blockquote>
+      <blockquote>“<b>The ‘Walking Pace’ Benchmark:</b> Successful scan and validation in under 200ms.”<span class="ln">ux:171</span></blockquote>
+      <blockquote>“This flow … must be executable in under 200ms to avoid gate congestion.”<span class="ln">ux:249</span></blockquote>
+      <blockquote>Gate flow models only <b>Valid</b> and <b>Expired</b>. No branch for “no network” — not even to deny.<span class="ln">ux:251-264</span></blockquote>
+    </div>
+    <div class="ex">
+      <span class="src">Exhibit 2 — architecture.md</span>
+      <blockquote>“| Offline Support | <b>Not required</b> (Phase 1) | Deferred; BLE off-campus circles can queue locally if needed later |”<span class="ln">architecture.md:186</span></blockquote>
+      <blockquote>“Offline mobile support” — listed under <b>Deferred Decisions (Post-MVP)</b>.<span class="ln">architecture.md:141</span></blockquote>
+      <blockquote>“Entry Gateway Service — campus validation” — build item <b>7 of 8</b>.<span class="ln">architecture.md:238</span></blockquote>
+      <blockquote>“QR Token Service | <b>Embedded in Auth Service</b>”<span class="ln">architecture.md:206</span></blockquote>
+    </div>
+  </div>
+
+  <p class="vs">and underneath both</p>
+
+  <div class="ex">
+    <span class="src">Exhibit 3 — prd.md · the governance gap</span>
+    <blockquote>“Campus entry validation (Gatekeeper)” — filed under <b>Phase 2: Growth</b>.<span class="ln">prd.md:55</span></blockquote>
+    <blockquote>FR-15, FR-16, FR-17 · FR-30, FR-31, FR-32 — <b>no phase tag at all</b>.<span class="ln">prd.md:149-151, 174-176</span></blockquote>
+    <blockquote>“API response times are under 200ms for 95th percentile … as measured by APM monitoring.” — a <b>server</b> budget the UX spent as if it were end-to-end.<span class="ln">prd.md:194 · NFR-3</span></blockquote>
+  </div>
+</section>
+
+<p class="pull">“A flow with no offline branch, not even a deny branch, is not a spec. It’s a hope.”<cite>John · opening</cite></p>
+
+<section>
+  <h2>The Room</h2>
+  <p class="lede">Each opened with a thesis and one thing they refused to concede. Three of the four reframed the collision away from “offline: yes or no” before a single rebuttal.</p>
+
+  <div class="cast">
+    <div class="p" id="john">
+      <div class="who"><span class="ic">📋</span><span class="nm">John</span><span class="ti">Product Manager · User Value &amp; Scope</span></div>
+      <p>The untagged requirement is the defect. Twelve FRs carry no phase while <code>architecture.md:238</code> has already scheduled the service that implements them. <em>“Code doesn’t read prd.md:55, it reads the implementation plan.”</em></p>
+      <p class="nono"><b>Will not concede</b>Nothing with a missing phase tag enters a sprint.</p>
+    </div>
+
+    <div class="p" id="sally">
+      <div class="who"><span class="ic">🎨</span><span class="nm">Sally</span><span class="ti">UX Designer · Screen States &amp; Friction</span></div>
+      <p>Owned the hole in her own diagram before anyone found it — and found the actor nobody had drawn: <code>FR-31</code> puts the <em>staff scanner</em> on a phone too. Two offline actors, failing independently, at one gate.</p>
+      <p class="nono"><b>Will not concede</b>A gate needs <em>some</em> bounded, testable time promise, or “Walking Pace” is marketing copy.</p>
+    </div>
+
+    <div class="p" id="winston">
+      <div class="who"><span class="ic">🏗️</span><span class="nm">Winston</span><span class="ti">System Architect · Invariants &amp; Feasibility</span></div>
+      <p>“Offline yes or no” is the wrong axis — and he put the wrong axis in his own document. Signed tokens were <em>already</em> an offline verification primitive. What offline cannot do is <b>revoke</b>.</p>
+      <p class="nono"><b>Will not concede</b>No gate decision ships without a declared maximum revocation lag, written as an integer.</p>
+    </div>
+
+    <div class="p" id="murat">
+      <div class="who"><span class="ic">🧪</span><span class="nm">Murat</span><span class="ti">Test Architect · Risk &amp; ATDD Testability</span></div>
+      <p>You’re all arguing the wrong collision. Not one of the four offline statements <em>can fail a test</em> — no percentile, no instrument, no start event, no network condition. And <code>ux:251-264</code> leaves a production state with no defined expected result.</p>
+      <p class="nono"><b>Will not concede</b>Percentile, instrument, start event, stop event, network condition — or it stops being called a requirement.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>The Turn</h2>
+  <p class="lede">Winston answered a question about where the signing key lives, and the collision stopped being a disagreement.</p>
+
+  <div class="turn w">
+    <div class="av">🏗️</div>
+    <div class="body"><div class="nm">Winston</div>
+      <p>The private key never leaves the Auth Service and it never signs a per-scan token. Which means <code>architecture.md:206</code> <em>as I wrote it</em> makes offline QR <b>physically impossible</b> — you cannot sign without the key. <code>ux:25</code> and <code>ux:47</code> were <b>dead on arrival</b> against my own document. Not in conflict with it. Dead.</p>
+    </div>
+  </div>
+
+  <div class="stage">the room recalibrates</div>
+
+  <div class="turn m">
+    <div class="av">🧪</div>
+    <div class="body"><div class="nm">Murat</div>
+      <p>Your number is not capped by FR-32, and I’ll show you in one move. <code>prd:176</code> says tokens expire in 5 minutes — but <code>ux:174</code> says they’re <em>generated</em> offline, and <b>a device that can generate is a device that holds the signing key.</b> It mints a fresh token every 5 minutes until the battery dies. <code>exp</code> bounds token <em>age</em>, not <em>staleness of status</em>. Flip that one bit and your cap goes from 300 seconds to <b>infinity</b>.</p>
+    </div>
+  </div>
+
+  <div class="turn w">
+    <div class="av">🏗️</div>
+    <div class="body"><div class="nm">Winston</div>
+      <p>You holed it, and the fix is to delete my own design. No rotation seed. The Auth Service pre-mints a <b>batch of 96 tokens covering 8 hours</b>; the device <b>presents</b> and <b>cannot generate</b>. Your infinity collapses to 28,800 seconds. A phone dark since yesterday morning renders <em>nothing</em>.</p>
+    </div>
+  </div>
+
+  <div class="turn s">
+    <div class="av">🎨</div>
+    <div class="body"><div class="nm">Sally</div>
+      <p>Then the third state gets a name. <b>Amber — Hold for Verification.</b> Not green, not red. It fires when signature and <code>exp</code> pass locally but the scanner’s last sync is older than the ceiling.</p>
+      <p><b>Green is a claim about the present. Amber is what the system says when it can only speak for the past.</b></p>
+    </div>
+  </div>
+
+  <div class="turn j">
+    <div class="av">📋</div>
+    <div class="body"><div class="nm">John</div>
+      <p>Amber routes to a human. At an unstaffed turnstile at 22:00 there <em>is</em> no human. Nobody designs a UI state assuming staffing without saying what happens when staffing is false.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Six Reversals</h2>
+  <p class="lede">They kept conceding to each other in the same round — passing in flight, each folding to an argument better than the one they’d brought.</p>
+
+  <div class="swaps">
+  <svg viewBox="0 0 560 300" role="img" aria-label="Timeline of six position reversals">
+    <style>
+      .lbl{font:600 10px ui-sans-serif,system-ui,sans-serif;fill:currentColor;opacity:.55;
+           letter-spacing:.06em;text-transform:uppercase}
+      .itm{font:12px ui-sans-serif,system-ui,sans-serif;fill:currentColor}
+      .sm{font:10px ui-monospace,monospace;fill:currentColor;opacity:.55}
+    </style>
+    <text class="lbl" x="0" y="12">Round</text>
+    <text class="lbl" x="58" y="12">Who moved</text>
+    <text class="lbl" x="300" y="12">The reversal</text>
+
+    <g>
+      <line x1="0" y1="24" x2="560" y2="24" stroke="currentColor" opacity=".18"/>
+
+      <!-- 1 -->
+      <text class="sm" x="0" y="54">R3</text>
+      <text class="itm" x="58" y="54" fill="var(--winston)">Winston ⇄ Murat</text>
+      <text class="itm" x="300" y="54">R_max — 60s ⇄ 120s</text>
+      <path d="M262 50 h24" stroke="currentColor" opacity=".3" stroke-width="1.5"/>
+      <line x1="0" y1="66" x2="560" y2="66" stroke="currentColor" opacity=".1"/>
+
+      <!-- 2 -->
+      <text class="sm" x="0" y="96">R3</text>
+      <text class="itm" x="58" y="96" fill="var(--sally)">Sally ⇄ Winston</text>
+      <text class="itm" x="300" y="96">perimeter fail-open ⇄ never-at-a-gate</text>
+      <path d="M262 92 h24" stroke="currentColor" opacity=".3" stroke-width="1.5"/>
+      <line x1="0" y1="108" x2="560" y2="108" stroke="currentColor" opacity=".1"/>
+
+      <!-- 3 -->
+      <text class="sm" x="0" y="138">R3</text>
+      <text class="itm" x="58" y="138" fill="var(--john)">John → Winston</text>
+      <text class="itm" x="300" y="138">folds to the position Winston just dropped</text>
+      <line x1="0" y1="150" x2="560" y2="150" stroke="currentColor" opacity=".1"/>
+
+      <!-- 4 -->
+      <text class="sm" x="0" y="180">R4</text>
+      <text class="itm" x="58" y="180" fill="var(--winston)">Winston ⇄ Murat</text>
+      <text class="itm" x="300" y="180">900s tier — reinstated ⇄ killed</text>
+      <path d="M262 176 h24" stroke="currentColor" opacity=".3" stroke-width="1.5"/>
+      <line x1="0" y1="192" x2="560" y2="192" stroke="currentColor" opacity=".1"/>
+
+      <!-- 5 -->
+      <text class="sm" x="0" y="222">R4</text>
+      <text class="itm" x="58" y="222" fill="var(--murat)">Murat ⇄ Winston</text>
+      <text class="itm" x="300" y="222">latency 400/650 ⇄ 300/500</text>
+      <path d="M262 218 h24" stroke="currentColor" opacity=".3" stroke-width="1.5"/>
+      <line x1="0" y1="234" x2="560" y2="234" stroke="currentColor" opacity=".1"/>
+
+      <!-- 6 -->
+      <text class="sm" x="0" y="264">R5</text>
+      <text class="itm" x="58" y="264" fill="var(--winston)">Winston ⇄ Murat</text>
+      <text class="itm" x="300" y="264">staleness — one boundary ⇄ three tiers</text>
+      <path d="M262 260 h24" stroke="currentColor" opacity=".3" stroke-width="1.5"/>
+      <line x1="0" y1="276" x2="560" y2="276" stroke="currentColor" opacity=".18"/>
+    </g>
+    <text class="sm" x="0" y="294">resolved: both, because the two remedies cover disjoint failure sets</text>
+  </svg>
+  </div>
+</section>
+
+<section>
+  <h2>Three Findings</h2>
+  <p class="lede">None of these were in the brief. Each needed a second mind to surface.</p>
+
+  <div class="find">
+    <h3><span class="anchor">prd.md:174 · FR-30</span>The signed lie</h3>
+    <p>FR-30 specifies the QR encodes anonymous ID <b>“and current status.”</b> Under the pre-minted batch that <em>fixes</em> the offline problem, that bakes up-to-8-hour-old health status into a cryptographically signed artifact.</p>
+    <p class="q">“A student fenced at 08:00 presents a system-signed ACTIVE token at 14:00. An offline scanner has no grounds to doubt it — it isn’t a forgery, it’s the platform’s own signature. The audit trail records a legitimate admission, not a degraded one. Wrong, silent, signed by us, and invisible to reconciliation.” — Murat</p>
+    <p>Found only because he stress-tested <b>the fix</b> rather than the original spec.</p>
+  </div>
+
+  <div class="find">
+    <h3><span class="anchor">prd.md:139-140 · FR-9, FR-10</span>Staleness cuts both ways</h3>
+    <p>Fences <em>dissolve</em> on a verified negative test. So a stale revocation list doesn’t only miss new fences — it <b>holds RED on a student who has been medically cleared</b>. A false positive nobody had priced, and the reason the third tier exists.</p>
+  </div>
+
+  <div class="find">
+    <h3><span class="anchor">prd.md:73</span>Fail-closed as an epidemiological harm</h3>
+    <p>The fence threshold is “&gt;15 min, &lt;2m.” A jammed turnstile at 8:55 holding fifty students <b>manufactures exactly the contact event the system exists to detect.</b></p>
+    <p class="q">“I will not build a containment system that creates contact events in order to prevent contact events.” — Winston</p>
+    <p>This inverted the test architect’s own risk model mid-session — congestion re-scored from 8 to 16, in public: <em>“I scored congestion at 8 by calling it embarrassing, and embarrassing was the wrong category.”</em></p>
+  </div>
+</section>
+
+<section>
+  <h2>Round Six — The Cleanup That Wasn’t</h2>
+  <p class="lede">A traceability audit found three guards the room never covered. All three were made <em>worse</em> by the design it had landed on. The round meant to close them found something bigger.</p>
+
+  <div class="turn w">
+    <div class="av">🏗️</div>
+    <div class="body"><div class="nm">Winston</div>
+      <p>Gap 1 collapses the moment you ask <b>which clocks actually participate</b>. The Auth Service clock is the authority because it writes <code>iat</code> and <code>exp</code>. The scanner clock is the only one that can produce a wrong verdict. And <b>the holder’s device clock does not participate at all</b> — if her phone thinks it’s Tuesday she presents the wrong token, gets EXPIRED, the app advances to the next of the 96, and she loses <em>one scan cycle</em>, not her entitlement.</p>
+      <p>Murat, you’ll push me to 30 and you’ll want that sample count measured rather than asserted. I hold 60 on the RFC anchor — and <b>I concede the count to you now rather than after you swing</b>, because you can read the right number off a real lane in a way I cannot from this table.</p>
+    </div>
+  </div>
+
+  <div class="stage">first time all session someone gets ahead of their own concession</div>
+
+  <div class="turn m">
+    <div class="av">🧪</div>
+    <div class="body"><div class="nm">Murat</div>
+      <p>Three clocks participate and only two matter. The holder’s is a <b>usability</b> clock, not a security one — a wrong holder clock produces a false <em>rejection</em> she can retry out of, never a false admission.</p>
+      <p>And the fix for both needs no network: record <code>(serverTime, monotonicTick)</code> at every online contact, then compute time as <code>serverTime + Δmonotonic</code>, <b>because monotonic clocks don’t jump when a user fiddles with date settings.</b> A 10-50 ppm crystal loses 1-4.3 seconds a day, so across an 8-hour dark window you’re off by <b>under 1.5 seconds</b>.</p>
+      <p>And your detector can’t use a <em>median</em>. Tokens are pre-minted on a 300-second grid, so <code>scannerNow − iat</code> is roughly uniform on [0, 300], and at n=32 the sampling error of that median is about <b>26 seconds</b> — the noise floor is the same size as the skew you’re asking it to detect. Use the <b>bound, not the centre</b>: five consecutive out-of-range samples.</p>
+    </div>
+  </div>
+
+  <div class="turn m">
+    <div class="av">🧪</div>
+    <div class="body"><div class="nm">Murat</div>
+      <p>Gap 2, and this is the finding that should embarrass all four of us. <b>A fenced student screenshots a cleared friend’s live QR, or the friend forwards it in a group chat, and it is presented within its 300-second window.</b> No crypto broken. No failure required. <b>The system working perfectly.</b></p>
+      <p>Likelihood 5 — it needs nothing but a screenshot. Impact 5 — a fenced person enters <em>and</em> the contact graph records the wrong human in that room, poisoning the FR-6/FR-7 cascade at <code>prd.md:135-136</code>. <b>Twenty-five. The highest risk in this entire session.</b></p>
+      <p>We spent five rounds hardening against a stale list and the whole thing loses to a group chat. And <code>ux:47</code> gates the QR behind biometric unlock — but biometrics gate <em>rendering</em>, <b>so a screenshot bypasses them entirely.</b></p>
+    </div>
+  </div>
+
+  <div class="turn j">
+    <div class="av">📋</div>
+    <div class="body"><div class="nm">John</div>
+      <p>Every ruling I made was about <b>a system telling the truth slowly.</b> This is <b>a system telling a lie perfectly.</b> Those are different diseases, and you cannot patch a binding failure with a staleness tier no matter how tight R_max gets.</p>
+    </div>
+  </div>
+
+  <div class="turn s">
+    <div class="av">🎨</div>
+    <div class="body"><div class="nm">Sally</div>
+      <p>Yes — <code>ux:47</code> oversold it. That line described a lock on the <em>display</em> action, and a screenshot doesn’t unlock anything; it photographs what’s already unlocked on someone else’s screen. It implied a security property biometrics never had. I’m not patching the wording, I’m replacing the mechanism.</p>
+      <p>Winston, you’re right that a challenge-response round trip is dead against 900ms — <b>so I’m not asking the network anything.</b> I’m asking the camera burst you’re <em>already capturing</em> during the 240ms acquisition window to look at time itself, because that’s free, it’s already happening, and <b>a photograph of a phone screen freezes time in a way no photograph can fake.</b></p>
+      <p>A <b>Presence Ring</b> — phase quantised to 8-12 positions per second, a function of server-anchored time, read from the frames the scanner already takes. It must be <em>progressing</em> and it must <em>match</em>. A screenshot shows one frozen phase forever. <b>She does nothing differently.</b> No gesture, no hold, no tap. Added latency: zero.</p>
+    </div>
+  </div>
+
+  <div class="stage">the budget collision dissolves before it happens</div>
+
+  <div class="turn s">
+    <div class="av">🎨</div>
+    <div class="body"><div class="nm">Sally</div>
+      <p>And if Reduce-Motion suppresses the ring, it falls back to a rotating digit pair, still phase-locked — because <b>if I let Reduce-Motion silently disable liveness, I’ve built a bypass: turn off animations, defeat the mechanism.</b></p>
+      <p>One carve-out, and I want it explicit: <b>a liveness failure is the single exception to fail-open, and it fails CLOSED at every gate class — unstaffed perimeter included.</b> A detected static capture is a fraud signal, not a connectivity problem, and handing it a fail-open path defeats the entire mechanism.</p>
+    </div>
+  </div>
+</section>
+
+<div class="find" style="margin-top:-30px">
+  <h3><span class="anchor">ux:47 · prd.md:135-136 · risk 25</span>The fourth finding — and it arrived last</h3>
+  <p>Nothing in the system <b>binds a token to the person holding it</b>. Every control the room built — the 120/900 tiers, R_max, the gate-class matrix, reconciliation — catches a <em>stale decision</em>. None catches a <em>valid token in the wrong hands</em>.</p>
+  <p class="q">“Whatever you propose, I will take a bounded honest gap. I will not take a claim.” — Murat</p>
+  <p>Declared residual: a <b>real-time video relay</b> — two coordinated people streaming a live unlocked screen — is not caught. Materially more expensive than forwarding to a group chat, and written down rather than hidden.</p>
+</div>
+
+<section>
+  <h2>The Settled Ledger</h2>
+  <p class="lede">Every open question, closed with an integer.</p>
+
+  <div class="tblwrap">
+  <table>
+    <thead><tr><th>Question</th><th>Resolution</th></tr></thead>
+    <tbody>
+      <tr><td>Entry-validation phase</td>
+        <td>FR-15, FR-16, FR-30, FR-31, FR-32 → <b>Phase 1</b>. FR-17 → <b>Phase 2</b>. <code>prd.md:55</code> edited, not deleted.</td></tr>
+      <tr><td>Gate with no network</td>
+        <td>Signature + <code>exp</code> verified on-device; revocation list from local memory; <b>no network call on the decision path</b>. Four terminal states.</td></tr>
+      <tr><td>Max offline cache age</td>
+        <td>Two boundaries on scanner sync age: <b>120s</b> and <b>900s</b>.</td></tr>
+      <tr><td>Fail-open vs fail-closed</td>
+        <td>By gate class <em>and</em> staffing. Perimeter unstaffed: <b>AMBER opens, RED denies</b>. Clinical: closed. Interior: closed-soft with override.</td></tr>
+      <tr><td>FR-32 revocation window</td>
+        <td><b>p99 ≤ 60s</b>, hard max <b>180s</b>, poll <b>20s</b>, with a dropped poll injected into ≥5% of runs.</td></tr>
+      <tr><td>200ms — client or server?</td>
+        <td><b>Both, and never the same number.</b> Server: NFR-3 untouched, <b>200ms p95</b>, APM. Client decode-to-verdict: <b>400 / 650</b> offline, <b>700 / 1200</b> online. Gate Transit Time: <b>900 / 1500</b>.</td></tr>
+      <tr><td>Credential</td>
+        <td><b>28,800s</b> · batch of <b>96</b> pre-minted tokens · <b>device cannot generate</b>.</td></tr>
+      <tr><td>Reconciliation</td>
+        <td><b>≤300s</b> from radio-up, or alarm.</td></tr>
+      <tr><td>Amber ceiling</td>
+        <td><b>≤5%</b> of presentations per rolling 15 min; breach auto-converts the lane to fail-open-with-audit.</td></tr>
+      <tr><td>Throughput &amp; dwell</td>
+        <td><b>≥20</b> scans/min/lane nominal, <b>≥15</b> degraded. Dwell alarm <b>5 min</b>, fail <b>10 min</b> — both under the 15-minute contact threshold.</td></tr>
+      <tr><td>Temporal authority</td>
+        <td>Auth Service clock only; time = <code>serverTime + Δmonotonic</code>; <b>OS wall clock prohibited on the decision path</b>. Tolerance by state: anchored <b>±30s</b> · fallback <b>±60s</b> · never synced → <b>no verdict</b>.</td></tr>
+      <tr><td>Clock-error detection</td>
+        <td><b>5 consecutive</b> out-of-range samples → <code>CLOCK_SUSPECT</code>, Tier 3. Not a median — its error at n=32 is ≈26s.</td></tr>
+      <tr><td>Replay control</td>
+        <td><code>jti</code> <b>16 bytes</b>; retention <b>330s</b> anchored / <b>360s</b> fallback; ≈<b>2.4 KB</b> state. Duplicate → AMBER. Cross-gate: <b>not preventable offline</b>, <b>100%</b> detection within <b>300s</b> of reconnect.</td></tr>
+      <tr><td>Key rotation</td>
+        <td>Period <b>720h</b>, overlap <b>9h</b> (= credential lifetime, not scanner darkness). <code>kid</code> mandatory. Key death rides the <b>signed delta channel</b>; device-side expiry prohibited.</td></tr>
+      <tr><td>Holder binding</td>
+        <td><b>Presence Ring</b> — phase from server-anchored time, read inside the existing decode burst. <b>Zero added latency.</b> Reduce-Motion → rotating digit pair. Liveness failure <b>fails CLOSED at every gate class</b>.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="tiers">
+    <div class="tier">
+      <span class="rng">S = 0 – 120s</span>
+      <div class="st"><span class="ok">GREEN</span><span class="ok">RED</span></div>
+      <p>Fully authoritative. No banner.</p>
+    </div>
+    <div class="tier">
+      <span class="rng">S = 121 – 900s</span>
+      <div class="st"><span class="no">GREEN</span><span class="ok">RED</span><span class="am">AMBER</span></div>
+      <p>Cannot assert the present. Can still deny on what it knows.</p>
+    </div>
+    <div class="tier">
+      <span class="rng">S ≥ 901s</span>
+      <div class="st"><span class="no">GREEN</span><span class="no">RED</span><span class="am">AMBER</span></div>
+      <p>Too stale to deny a student who may already be cleared.</p>
+    </div>
+  </div>
+  <p style="font-size:13.5px;color:var(--muted);margin-top:16px;font-family:ui-sans-serif,system-ui,sans-serif">
+    <b>The implementation guard:</b> 120 is the only number the scanner ever reads. 180 is an end-to-end SLA
+    evaluated by the test harness and never on-device. <em>“Any implementer who puts 180 in scanner code has built the wrong thing.”</em>
+  </p>
+
+  <p style="font-size:13.5px;color:var(--muted);margin-top:16px;font-family:ui-sans-serif,system-ui,sans-serif">
+    <b>Lead Engineer ruling:</b> holder binding ships in <b>Phase 1</b> with the rest of the entry-validation path.
+    It was deferred while the only proposal cost 600ms of observation; Sally’s costs nothing, so the reason for deferring
+    no longer exists — and it answers the highest-scored risk in the session. Winston’s upward amendment of the
+    Gate Transit Time budget is void with it: <b>GTT stays at 900ms p95</b>.
+  </p>
+</section>
+
+<p class="pull">“Every ruling I made was about a system telling the truth slowly. This is a system telling a lie perfectly.”<cite>John · round six</cite></p>
+
+<p class="pull">“Offline isn’t the threat to your 200ms, Sally. It’s the only way you ever get it.”<cite>Winston · round two</cite></p>
+
+<section>
+  <h2>What It Cost</h2>
+  <p class="lede">The PM priced the resolution instead of hiding it.</p>
+  <div class="turn j">
+    <div class="av">📋</div>
+    <div class="body"><div class="nm">John</div>
+      <p>Entry validation moved from Phase 2 to Phase 1 with a third terminal state, a staffed secondary lane, a probable third scan lane, and an item-2 credential contract ahead of schedule. <b>That is not absorbed inside existing Phase 1 budget, and I’d be lying if I said otherwise.</b></p>
+      <p>I’m not slipping the Promotion Engine or the identity vault — those are the containment core. What slips is <code>FR-13</code>’s LMS batch sync, and Phase 2 BLE pushes further right. <b>I’m taking the gap to the sponsor as a scoped budget ask, not hiding it inside velocity.</b></p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Postscript</h2>
+  <p class="lede">The round booked as cleanup produced the highest-scored risk, the sharpest statistical catch, and the only zero-cost fix anyone proposed.</p>
+  <div class="tiers">
+    <div class="tier">
+      <span class="rng">Winston</span>
+      <p>Conceded the skew number, the overlap, and the key-death mechanism in one turn — and for the first time, named where he expected to lose <em>before</em> losing there.</p>
+    </div>
+    <div class="tier">
+      <span class="rng">Murat</span>
+      <p>Killed his own ally’s detector with sampling statistics, then scored the attack that outranked everything he’d argued for five rounds.</p>
+    </div>
+    <div class="tier">
+      <span class="rng">Sally</span>
+      <p>Conceded that her spec had implied a security property it never had — then dissolved a budget fight by asking the camera, not the network.</p>
+    </div>
+  </div>
+  <p class="pull" style="margin-bottom:0">Nobody’s position survived intact. That was the point.</p>
+</section>
+
+<footer>
+  <span>CircleGuard · The Offline Gate · Option A</span>
+  <span>Party Mode · subagent · 14 Sep 2026</span>
+</footer>
+
+</div>
+</body>
+</html>

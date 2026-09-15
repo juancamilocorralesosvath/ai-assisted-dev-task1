@@ -1,0 +1,122 @@
+[
+  {
+    "location": "Architecture > Project Context Analysis > Requirements Overview",
+    "trigger_condition": "Architecture claims there are 23 functional requirements across six categories, while the PRD defines FR-1 through FR-38 across substantially more capability areas.",
+    "guard_snippet": "Reconcile all 38 functional requirements into an architecture traceability matrix that names the owning service, data store, API or event contract, implementation phase, and verification method for every FR.",
+    "potential_consequence": "Questionnaires, certificate management, QR entry, dynamic RBAC, and web parity can be omitted from implementation while the architecture still reports itself complete."
+  },
+  {
+    "location": "PRD > Product Scope; PRD > User Journeys UJ-3 and UJ-4; UX > Core User Experience",
+    "trigger_condition": "WiFi and BLE detection are assigned to Phase 2, but scheduled and sporadic proximity flows are treated as current journeys and as the defining experience, while Phase 1 only promises manual circle creation.",
+    "guard_snippet": "Label every journey and UX component with its delivery phase, and provide a complete Phase 1 manual check-in experience that does not depend on WiFi, BLE, or proximity prompts.",
+    "potential_consequence": "The MVP may be presented as supporting an experience its approved scope and implementation cannot deliver."
+  },
+  {
+    "location": "PRD > FR-3 and UJ-4; UX > Effortless Interactions and Sporadic Proximity Alert",
+    "trigger_condition": "The PRD requires both nearby users to confirm before a sporadic circle edge is created, but the UX says background proximity should register contacts without user intervention.",
+    "guard_snippet": "Require explicit, revocable consent before persisting a sporadic contact edge; define decline, timeout, one-party acceptance, and later withdrawal behavior, and treat passive detection only as a prompt trigger.",
+    "potential_consequence": "Contacts may be recorded without consent, undermining the privacy promise and exposing the university to surveillance and regulatory complaints."
+  },
+  {
+    "location": "UX > Professor Circle Dashboard; PRD > DR-2, FR-18 through FR-20; Architecture > Cross-Cutting Concerns",
+    "trigger_condition": "The professor dashboard displays participant names and active participant lists even though only Health Center personnel may de-identify anonymous IDs and the graph must contain no real identifiers.",
+    "guard_snippet": "Replace names with scoped pseudonyms or attendance tokens for professor views, prohibit identity-vault joins outside authorized Health Center workflows, and document any separately authorized academic roster lookup.",
+    "potential_consequence": "Faculty can infer health or fence status for identifiable students, directly violating the stated anonymity boundary."
+  },
+  {
+    "location": "PRD > FR-21 through FR-23; UX > Geospatial Hotspot Visualizations; Architecture > Reporting & Analytics",
+    "trigger_condition": "Hotspots are segmented by building and department, but no minimum cohort size, suppression rule, time bucketing, differential privacy control, or drill-down boundary is specified.",
+    "guard_snippet": "Define aggregation safeguards including minimum cohort thresholds, small-cell suppression, bounded time and location granularity, query-rate controls, and a prohibition on drilling down to circles or anonymous IDs.",
+    "potential_consequence": "Administrators can re-identify symptomatic individuals in small departments, rooms, or time windows despite the aggregated-data claim."
+  },
+  {
+    "location": "PRD > DR-4; Architecture > Data Architecture > Event Store and Authentication & Security > Audit",
+    "trigger_condition": "Users may request complete deletion at any time, while Kafka is designated as a persistent or immutable audit log and no deletion, tombstoning, cryptographic erasure, backup, or legal-retention exception is defined.",
+    "guard_snippet": "Specify a deletion contract covering PostgreSQL, Neo4j, Kafka, Redis, uploaded files, analytics, logs, and backups, with retention exceptions, pseudonymous audit tombstones, completion deadlines, and user-visible confirmation.",
+    "potential_consequence": "The product cannot truthfully fulfill complete deletion requests and may retain linkable health data indefinitely."
+  },
+  {
+    "location": "PRD > DR-2, FR-18 and NFR-5; Architecture > Authentication & Security > Graph Privacy",
+    "trigger_condition": "Salted SHA-256 identifiers are called non-reversible without defining the source identifier entropy, salt secrecy and scope, rotation, or protection against enumeration and cross-record correlation.",
+    "guard_snippet": "Generate graph identifiers as random opaque IDs or keyed HMACs using managed, rotatable secrets; prohibit unsalted or per-record-salt storage alongside hashes and document unlinkability and rotation procedures.",
+    "potential_consequence": "Attackers with predictable university identifiers or leaked salts may recover identities or correlate a person's activity across the graph."
+  },
+  {
+    "location": "PRD > FR-17; UX > Visitor Mobile Handoff & Local Auth; Architecture > Authentication Flow",
+    "trigger_condition": "The PRD says the backend links biometrics, while the UX describes FaceID or TouchID local authentication and automatic token transfer, but the architecture defines neither a secure handoff protocol nor a boundary preventing biometric material from reaching the server.",
+    "guard_snippet": "State that biometric templates never leave the device; define a short-lived, single-use, audience-bound handoff code, OS-backed key storage, proof-of-possession, replay prevention, expiry, cancellation, and recovery without biometrics.",
+    "potential_consequence": "A vague implementation may upload biometric data or expose transferable guest credentials through replay, interception, or account takeover."
+  },
+  {
+    "location": "UX > Core User Experience > Success Criteria; Architecture > Mobile Architecture > Offline Support",
+    "trigger_condition": "The UX requires QR tokens to work without cellular data, while the architecture explicitly says offline support is not required in Phase 1.",
+    "guard_snippet": "Choose one Phase 1 contract: either remove offline validity from UX or define offline-signed token issuance, scanner trust material, clock-skew tolerance, revocation limits, replay controls, and synchronization behavior.",
+    "potential_consequence": "Users may be denied entry during network outages or scanners may accept stale or revoked credentials without a defined risk model."
+  },
+  {
+    "location": "PRD > UJ-5 and FR-30 through FR-32; UX > Frictionless Campus Entry and Rotating QR Token",
+    "trigger_condition": "Entry is modeled only as Green or Red plus token validity states, with no UI or policy for unknown status, offline scanner, backend timeout, clock skew, revoked token, permission denial, app lockout, or accessibility fallback.",
+    "guard_snippet": "Define a complete entry state machine with Active, Fenced, Pending Review, Unknown, Expired, Revoked, Offline-Unverifiable, and Service-Unavailable states, including copy, iconography, retry, staffed fallback, and audit behavior for each.",
+    "potential_consequence": "Operational failures may be shown as medical denial, valid users may be blocked, or guards may bypass controls inconsistently."
+  },
+  {
+    "location": "UX > Frictionless Campus Entry; UX > Critical Success Moments; PRD > NFR-3",
+    "trigger_condition": "The UX says the entire gate flow is executable in under 200ms, while the architecture only promises API responses under 200ms at p95 and the journey also includes app activation, biometric authentication, QR rendering, scanning, validation, feedback, and gate actuation.",
+    "guard_snippet": "Split the latency budget into measurable stages and define end-to-end percentile targets from scan acquisition to gate decision under normal, peak, degraded-network, and offline conditions.",
+    "potential_consequence": "The headline walking-pace promise will be untestable or routinely missed even when the API satisfies its own latency target."
+  },
+  {
+    "location": "PRD > FR-11 and FR-12; UX > Fence Notification; Architecture > Notification Dispatcher",
+    "trigger_condition": "Fence notifications must include the reason and are sent simultaneously by push, email, and SMS, but no privacy-safe lock-screen, shared-device, email-subject, SMS-preview, delivery-failure, or channel-consent rules exist.",
+    "guard_snippet": "Use neutral notification previews with authenticated in-app detail, require per-channel consent, prohibit medical status and exposure-source details in subjects or lock screens, and define fallback, retry, deduplication, and delivery audit rules.",
+    "potential_consequence": "Sensitive health or contact information may be exposed to family members, employers, mobile carriers, or anyone viewing a locked device."
+  },
+  {
+    "location": "PRD > FR-24 through FR-26; UX > Symptom Self-Reporting and Form Patterns; Architecture > Form Engine",
+    "trigger_condition": "Dynamic questionnaires are editable at runtime, but the bundle omits versioning, publication approval, localization, accessibility validation, answer correction, consent, retention, clinical escalation, and behavior when configuration changes mid-submission.",
+    "guard_snippet": "Version and immutably snapshot every published questionnaire; require authorized review, schema validation, localization and accessibility checks, explicit consent, response amendment rules, emergency guidance, retention limits, and safe handling of stale drafts.",
+    "potential_consequence": "Users may submit against invalid or changing medical questions, receive unsafe guidance, or lose the ability to understand and correct sensitive responses."
+  },
+  {
+    "location": "PRD > FR-27 through FR-29; Architecture > File Storage",
+    "trigger_condition": "Health certificates are stored on a Kubernetes PersistentVolume without requirements for malware scanning, file-type verification, size limits, encryption, quarantine, retention, deletion, download controls, watermarking, or access audit.",
+    "guard_snippet": "Define a secure upload pipeline with allowlisted formats, content-signature validation, size and decompression limits, malware scanning and quarantine, encrypted object storage, expiring download links, least-privilege access, audit logging, and retention deletion.",
+    "potential_consequence": "Attackers may upload malicious or oversized files, while sensitive certificates remain broadly accessible or retained beyond their purpose."
+  },
+  {
+    "location": "PRD > FR-33 through FR-36; Architecture > Dynamic RBAC and Authentication Flow",
+    "trigger_condition": "Roles and permissions can change at runtime, but services authorize solely from locally validated JWT claims and no token lifetime, revocation, permission-version, emergency-disable, or cache invalidation mechanism is specified.",
+    "guard_snippet": "Add short token lifetimes, permission-version claims, immediate revocation for high-risk roles, centralized signing-key rotation, authorization cache invalidation, and mandatory audit and dual approval for role changes.",
+    "potential_consequence": "Removed privileges can remain usable until token expiry, allowing former staff or misconfigured accounts to continue de-identifying users or managing fences."
+  },
+  {
+    "location": "Architecture > Authentication & Security > Auth Chain and Authentication Flow",
+    "trigger_condition": "Authentication tries LDAP and then falls back to the guest database without defining how duplicate usernames, LDAP outages, disabled LDAP accounts, or ambiguous failure types are handled.",
+    "guard_snippet": "Route authentication by explicit account realm or immutable account type, forbid fallback after a matched LDAP account fails, reject cross-realm identifier collisions, and distinguish invalid credentials from provider unavailability.",
+    "potential_consequence": "An attacker may create a local account matching a campus identifier or exploit an LDAP outage to bypass institutional account controls."
+  },
+  {
+    "location": "PRD > FR-8 through FR-10 and UJ-6; UX > Feedback Patterns and User Journey Flows",
+    "trigger_condition": "Fence resolution has no user-facing states for test submitted, verification pending, certificate rejected, conflicting suspect paths, medical override review, cascade recalculation, or notification failure.",
+    "guard_snippet": "Define a fence-resolution state machine and corresponding screens for Submitted, Under Review, Rejected with reason, Accepted-Recalculating, Released, and Still Fenced by another path, with retry, appeal, support, and notification behavior.",
+    "potential_consequence": "Users may assume a negative test immediately restores access, repeatedly submit records, or arrive at campus while another active exposure path still blocks entry."
+  },
+  {
+    "location": "UX > Experience Principles, Effortless Interactions, and Emotional Design Principles",
+    "trigger_condition": "The principles 'Invisible is Better' and automatic background monitoring conflict with 'Radical Transparency' and 'Control Over Data,' yet no permissions, disclosure, pause, battery, sensor-disabled, or degraded-mode UX is specified.",
+    "guard_snippet": "Add onboarding and persistent privacy controls that explain each sensor and purpose, request permissions contextually, show active scanning status, allow pausing or withdrawal, and provide manual alternatives when BLE, WiFi, notifications, or location access is denied.",
+    "potential_consequence": "Users may experience covert-seeming surveillance, battery drain, or a broken app after declining permissions, eroding trust and adoption."
+  },
+  {
+    "location": "PRD > FR-14 and Product Scope; Architecture > Implementation Sequence",
+    "trigger_condition": "Automatic class-room cancellation is declared a Phase 3 capability but also appears as an unconditional functional requirement, with no Phase 1 exclusion, authorization boundary, confirmation step, conflict resolution, or architecture component responsible for reservations.",
+    "guard_snippet": "Mark FR-14 as Phase 3 or add a reservation integration owner and require policy thresholds, authorized approval, idempotency, cancellation reversal, instructor notification, and protection against cascades triggering duplicate cancellations.",
+    "potential_consequence": "The MVP may accidentally automate disruptive room cancellations or fail acceptance because an out-of-scope integration is treated as mandatory."
+  },
+  {
+    "location": "PRD > UJ-2, FR-6 through FR-10; Architecture > Promotion Engine",
+    "trigger_condition": "The recursive promotion rules do not define cycle handling, idempotency, concurrent reports, duplicate events, maximum traversal depth, stale edges, rollback after false reports, or deterministic precedence among Suspect, Probable, Confirmed, Active, and Fenced.",
+    "guard_snippet": "Specify a formal status-transition table and graph traversal contract with event idempotency keys, cycle detection, concurrency control, path provenance, precedence rules, bounded traversal, compensating recalculation, and auditable transition reasons.",
+    "potential_consequence": "Duplicate or concurrent events can create endless cascades, inconsistent statuses, incorrect releases, or mass fencing from a single erroneous report."
+  }
+]
