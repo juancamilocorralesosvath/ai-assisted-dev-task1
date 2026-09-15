@@ -1,40 +1,40 @@
 installation:
   version: 6.12.0
   installDate: 2026-09-14T16:25:01.035Z
-  lastUpdated: 2026-09-14T16:25:49.796Z
-  installShims: true
+  lastUpdated: 2026-09-14T20:50:16.488Z
+  installShims: false
 modules:
   - name: core
     version: 6.12.0
     installDate: 2026-09-14T16:24:50.398Z
-    lastUpdated: 2026-09-14T16:25:49.778Z
+    lastUpdated: 2026-09-14T20:50:16.480Z
     source: built-in
     npmPackage: null
     repoUrl: null
   - name: bmm
     version: 6.12.0
     installDate: 2026-09-14T16:24:51.804Z
-    lastUpdated: 2026-09-14T16:25:49.782Z
+    lastUpdated: 2026-09-14T20:50:16.482Z
     source: built-in
     npmPackage: null
     repoUrl: null
-  - name: wds
-    version: v0.4.3
-    installDate: 2026-09-14T16:24:55.818Z
-    lastUpdated: 2026-09-14T16:25:49.788Z
-    source: external
-    npmPackage: bmad-wds
-    repoUrl: https://github.com/bmad-code-org/bmad-method-wds-expansion
-    channel: stable
-    sha: cc16f09fcfab26d35635af1491f36a38a8431c8d
   - name: tea
     version: v1.26.0
     installDate: 2026-09-14T16:25:00.583Z
-    lastUpdated: 2026-09-14T16:25:49.796Z
+    lastUpdated: 2026-09-14T20:50:16.486Z
     source: external
     npmPackage: bmad-method-test-architecture-enterprise
     repoUrl: https://github.com/bmad-code-org/bmad-method-test-architecture-enterprise
     channel: stable
     sha: 9c6ca208bcfb99dad244e88f8df7cb4f26e5ff21
+  - name: wds
+    version: v0.4.3
+    installDate: 2026-09-14T16:24:55.818Z
+    lastUpdated: 2026-09-14T20:50:16.488Z
+    source: external
+    npmPackage: bmad-wds
+    repoUrl: https://github.com/bmad-code-org/bmad-method-wds-expansion
+    channel: stable
+    sha: cc16f09fcfab26d35635af1491f36a38a8431c8d
 ides:
-  - codex
+  - claude-code
